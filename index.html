@@ -288,8 +288,8 @@
               <p class="text-xs text-slate-500 text-muted">Pantau tanggal terisi dan kosong secara visual</p>
             </div>
             <div class="flex items-center gap-3 text-xs font-bold">
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Terisi</span>
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-400 inline-block"></span> Kosong</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-blue-500 inline-block"></span> Terisi</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-red-100 border border-red-400 inline-block"></span> Kosong</span>
             </div>
           </div>
           <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-500 mb-2">
@@ -300,7 +300,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="card-surface rounded-2xl p-4">
-            <h3 class="text-xs font-extrabold uppercase text-amber-600 mb-2">Tamu Hari Ini</h3>
+            <h3 class="text-xs font-extrabold uppercase text-blue-600 mb-2">Tamu Hari Ini</h3>
             <div id="cal-today-list" class="space-y-2 text-xs"></div>
           </div>
           <div class="card-surface rounded-2xl p-4">
@@ -310,7 +310,7 @@
         </div>
       </section>
 
-      <!-- ==================== TAB 5: PENGELOLAAN APARTEMEN ==================== -->
+      <!-- ==================== TAB 5: PENGELOLAAN APARTEMEN & SEWA ==================== -->
       <section id="view-apartment" class="view-section hidden space-y-4">
         <div class="card-surface rounded-2xl p-5 space-y-4 border-t-4 border-t-amber-500">
           <div class="flex flex-wrap items-start justify-between gap-3">
@@ -320,7 +320,10 @@
               <p class="text-xs text-slate-500 text-muted">Jatuh tempo setiap tanggal <span id="apt-due-display" class="font-bold">17</span></p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button onclick="openAptModal()" class="px-3.5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
+              <button onclick="openAptModal(true)" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit Sewa Unit
+              </button>
+              <button onclick="openAptModal(false)" class="px-3.5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
                 <i data-lucide="plus" class="w-4 h-4"></i> + Unit Baru
               </button>
               <button onclick="openRentPayModal()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-extrabold shadow flex items-center gap-1.5">
@@ -350,7 +353,10 @@
         </div>
 
         <div class="card-surface rounded-2xl p-4 space-y-3">
-          <h3 class="text-sm font-extrabold">Riwayat Pembayaran Sewa ke Pemilik</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold">Riwayat Pembayaran Sewa ke Pemilik</h3>
+            <span class="text-[11px] text-slate-500">Klik Edit untuk ubah status/nominal</span>
+          </div>
           <div id="rent-history-list" class="space-y-2"></div>
         </div>
       </section>
@@ -437,11 +443,14 @@
           </div>
         </div>
 
-        <!-- PENGATURAN UNIT APARTEMEN & PENGINGAT -->
+        <!-- PENGATURAN UNIT APARTEMEN & SEWA BULANAN -->
         <div class="card-surface rounded-2xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Pengaturan Unit Apartemen & Modal</h3>
-            <button onclick="openAptModal()" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold">+ Tambah Unit Apartemen</button>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Pengaturan Sewa Apartemen & Pengingat</h3>
+              <p class="text-[11px] text-slate-500 text-muted">Edit nama apartemen, harga sewa bulanan, deposit, dan tanggal jatuh tempo</p>
+            </div>
+            <button onclick="openAptModal(false)" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold">+ Tambah Unit Apartemen</button>
           </div>
 
           <!-- DAFTAR UNIT APARTEMEN -->
@@ -449,19 +458,19 @@
 
           <form onsubmit="saveApartmentAndSettings(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
             <div>
-              <label class="block font-bold mb-1">Nama Unit Aktif</label>
+              <label class="block font-bold mb-1">Nama Unit Apartemen</label>
               <input type="text" id="set-apt-name" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Modal Sewa Bulanan (Rp)</label>
-              <input type="number" id="set-apt-rent" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+              <label class="block font-bold mb-1">Harga Sewa Apartemen / Bulan (Rp)</label>
+              <input type="number" id="set-apt-rent" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Deposit (Rp)</label>
+              <label class="block font-bold mb-1">Deposit Sewa (Rp)</label>
               <input type="number" id="set-apt-deposit" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Tanggal Jatuh Tempo (1-31)</label>
+              <label class="block font-bold mb-1">Tanggal Jatuh Tempo Sewa (1-31)</label>
               <input type="number" id="set-apt-due" min="1" max="31" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
             </div>
             <div>
@@ -490,7 +499,9 @@
               </div>
             </div>
             <div class="sm:col-span-2 pt-1">
-              <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 text-amber-400 font-extrabold text-xs">Simpan Pengaturan</button>
+              <button type="submit" id="btn-save-settings" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xs shadow">
+                Simpan Pengaturan Sewa & Aplikasi
+              </button>
             </div>
           </form>
         </div>
@@ -532,7 +543,7 @@
         <button onclick="closeModal('more-menu-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <button onclick="navigate('settings'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 font-extrabold text-xs flex items-center gap-3 text-amber-900">
-        <i data-lucide="tags" class="w-4 h-4 text-amber-600"></i> Edit Pricelist, Paket Hemat & Pengaturan
+        <i data-lucide="tags" class="w-4 h-4 text-amber-600"></i> Edit Sewa Apartemen, Pricelist & Pengaturan
       </button>
       <button onclick="navigate('apartment'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
         <i data-lucide="building-2" class="w-4 h-4 text-amber-600"></i> Kelola Unit Apartemen & Bayar Sewa
@@ -681,14 +692,15 @@
     </div>
   </div>
 
-  <!-- MODAL PEMBAYARAN SEWA BULANAN -->
+  <!-- MODAL PEMBAYARAN SEWA BULANAN (TAMBAH & EDIT) -->
   <div id="rent-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white text-slate-900 rounded-3xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-extrabold text-base">Pembayaran Sewa ke Pemilik</h3>
+        <h3 id="rent-modal-title" class="font-extrabold text-base">Pembayaran Sewa ke Pemilik</h3>
         <button onclick="closeModal('rent-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form onsubmit="saveRentPayment(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="rent-pay-id" />
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1">Bulan Periode</label>
@@ -773,24 +785,25 @@
     </div>
   </div>
 
-  <!-- MODAL TAMBAH UNIT APARTEMEN -->
+  <!-- MODAL TAMBAH / EDIT UNIT APARTEMEN -->
   <div id="apt-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-extrabold text-base">Tambah Unit Apartemen Baru</h3>
+        <h3 id="apt-modal-title" class="font-extrabold text-base">Tambah Unit Apartemen Baru</h3>
         <button onclick="closeModal('apt-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form onsubmit="createApartment(event)" class="space-y-3 text-xs">
+      <form onsubmit="saveApartmentModal(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="edit-apt-id" />
         <div>
           <label class="block font-bold mb-1">Nama Apartemen / Unit</label>
-          <input type="text" id="new-apt-name" required placeholder="Contoh: Saladin Mansion Unit B" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <input type="text" id="new-apt-name" required placeholder="Contoh: Saladin Mansion" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div>
-          <label class="block font-bold mb-1">Modal Sewa Bulanan (Rp)</label>
+          <label class="block font-bold mb-1">Harga Sewa Apartemen / Bulan (Rp)</label>
           <input type="number" id="new-apt-rent" required value="3000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
         </div>
         <div>
-          <label class="block font-bold mb-1">Deposit (Rp)</label>
+          <label class="block font-bold mb-1">Deposit Sewa (Rp)</label>
           <input type="number" id="new-apt-deposit" required value="0" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div>
@@ -957,12 +970,19 @@
           sb.from('pricing_packages').select('*').order('duration_hours', { ascending: true }),
           sb.from('transactions').select('*').order('transaction_date', { ascending: false }),
           sb.from('rent_payments').select('*').order('period_year', { ascending: false }),
-          sb.from('app_settings').select('*').limit(1).single()
+          sb.from('app_settings').select('*').limit(1).maybeSingle()
         ]);
 
         apartments = aptRes.data || [];
         if (!apartments.length) {
-          apartments = [{ id: null, name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 }];
+          const { data: createdApt } = await sb.from('apartments').insert({
+            user_id: currentUser.id,
+            name: 'Saladin Mansion',
+            monthly_rent: 3000000,
+            deposit: 0,
+            due_day: 17
+          }).select().single();
+          apartments = createdApt ? [createdApt] : [{ id: null, name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 }];
         }
         if (!activeAptId || !apartments.find(a => a.id === activeAptId)) {
           activeAptId = apartments[0].id;
@@ -1355,7 +1375,8 @@
 
     async function deleteTransaction(id) {
       if (!confirm('Hapus data ini?')) return;
-      await sb.from('transactions').delete().eq('id', id);
+      const { error } = await sb.from('transactions').delete().eq('id', id);
+      if (error) return alert('Gagal menghapus: ' + error.message);
       showToast('Data dihapus.');
       await syncAllData(false);
     }
@@ -1437,7 +1458,7 @@
       await syncAllData(false);
     }
 
-    // ================= KALENDER OKUPANSI =================
+    // ================= KALENDER OKUPANSI (TERISI = BIRU, KOSONG = MERAH) =================
     function renderCalendar(month, year, mIncomes) {
       const firstDay = new Date(year, month - 1, 1).getDay();
       const daysInMonth = new Date(year, month, 0).getDate();
@@ -1457,9 +1478,9 @@
 
         const isBooked = bookings.length > 0;
         html += `
-          <div class="min-h-[54px] p-1.5 rounded-xl border text-left ${isBooked ? 'bg-amber-500/20 border-amber-500' : 'bg-emerald-50/70 border-emerald-200'}">
-            <div class="text-[11px] font-extrabold ${isBooked ? 'text-amber-800' : 'text-emerald-800'}">${d}</div>
-            ${bookings.slice(0, 2).map(b => `<div class="text-[9px] font-bold truncate bg-slate-900 text-amber-300 px-1 rounded mt-0.5">${b.guest_name}</div>`).join('')}
+          <div class="min-h-[54px] p-1.5 rounded-xl border text-left ${isBooked ? 'bg-blue-500/20 border-blue-500' : 'bg-red-50/80 border-red-300'}">
+            <div class="text-[11px] font-extrabold ${isBooked ? 'text-blue-800' : 'text-red-700'}">${d}</div>
+            ${bookings.slice(0, 2).map(b => `<div class="text-[9px] font-bold truncate bg-blue-600 text-white px-1 rounded mt-0.5">${b.guest_name}</div>`).join('')}
           </div>
         `;
       }
@@ -1478,12 +1499,12 @@
       const tmrGuests = getByDate(tomorrow);
 
       document.getElementById('cal-today-list').innerHTML = todayGuests.length
-        ? todayGuests.map(g => `<div class="p-2 rounded-xl bg-amber-50 border border-amber-200 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
-        : '<p class="text-slate-400">Kamar kosong hari ini.</p>';
+        ? todayGuests.map(g => `<div class="p-2 rounded-xl bg-blue-50 border border-blue-300 text-blue-900 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
+        : '<p class="text-red-500 font-semibold">Kamar kosong hari ini.</p>';
 
       document.getElementById('cal-tomorrow-list').innerHTML = tmrGuests.length
-        ? tmrGuests.map(g => `<div class="p-2 rounded-xl bg-cream border border-slate-200 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
-        : '<p class="text-slate-400">Belum ada jadwal tamu besok.</p>';
+        ? tmrGuests.map(g => `<div class="p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
+        : '<p class="text-red-500 font-semibold">Belum ada jadwal tamu besok.</p>';
     }
 
     // ================= PENGELOLAAN APARTEMEN & SEWA =================
@@ -1502,66 +1523,113 @@
         return;
       }
       histEl.innerHTML = aptRentList.map(r => `
-        <div class="p-3 rounded-xl bg-cream border border-slate-200 flex items-center justify-between text-xs">
+        <div class="p-3 rounded-xl bg-cream border border-slate-200 flex items-center justify-between gap-2 text-xs">
           <div>
             <p class="font-extrabold">${MONTHS[r.period_month - 1]} ${r.period_year}</p>
             <p class="text-[11px] text-slate-500">Tgl Bayar: ${r.payment_date || '-'} • ${r.payment_method}</p>
+            ${r.notes ? `<p class="text-[10px] italic text-slate-500">${r.notes}</p>` : ''}
           </div>
           <div class="text-right">
             <p class="font-extrabold">${formatRp(r.amount)}</p>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === 'Sudah dibayar' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${r.status}</span>
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === 'Sudah dibayar' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${r.status}</span>
+            <div class="flex gap-1.5 justify-end mt-1.5">
+              <button onclick="openRentPayModal('${r.id}')" class="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-800 text-[10px] font-bold">Edit</button>
+              <button onclick="deleteRentPayment('${r.id}')" class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>
+            </div>
           </div>
         </div>
       `).join('');
     }
 
-    function openAptModal() {
-      document.getElementById('new-apt-name').value = '';
-      document.getElementById('new-apt-rent').value = 3000000;
-      document.getElementById('new-apt-deposit').value = 0;
-      document.getElementById('new-apt-due').value = 17;
+    function openAptModal(isEdit = false, targetId = null) {
+      if (isEdit) {
+        const target = targetId ? apartments.find(a => a.id === targetId) : apartment;
+        document.getElementById('apt-modal-title').textContent = 'Edit Sewa & Data Apartemen';
+        document.getElementById('edit-apt-id').value = target?.id || '';
+        document.getElementById('new-apt-name').value = target?.name || 'Saladin Mansion';
+        document.getElementById('new-apt-rent').value = target?.monthly_rent ?? 3000000;
+        document.getElementById('new-apt-deposit').value = target?.deposit ?? 0;
+        document.getElementById('new-apt-due').value = target?.due_day ?? 17;
+      } else {
+        document.getElementById('apt-modal-title').textContent = 'Tambah Unit Apartemen Baru';
+        document.getElementById('edit-apt-id').value = '';
+        document.getElementById('new-apt-name').value = '';
+        document.getElementById('new-apt-rent').value = 3000000;
+        document.getElementById('new-apt-deposit').value = 0;
+        document.getElementById('new-apt-due').value = 17;
+      }
       document.getElementById('apt-modal').classList.remove('hidden');
     }
 
-    async function createApartment(e) {
+    async function saveApartmentModal(e) {
       e.preventDefault();
-      const { data, error } = await sb.from('apartments').insert({
+      const editId = document.getElementById('edit-apt-id').value;
+      const payload = {
         user_id: currentUser.id,
         name: document.getElementById('new-apt-name').value.trim(),
         monthly_rent: Number(document.getElementById('new-apt-rent').value),
         deposit: Number(document.getElementById('new-apt-deposit').value),
         due_day: Number(document.getElementById('new-apt-due').value)
-      }).select().single();
+      };
 
-      if (error) return alert('Gagal menambah unit: ' + error.message);
-      activeAptId = data.id;
+      if (editId) {
+        const { error } = await sb.from('apartments').update(payload).eq('id', editId);
+        if (error) return alert('Gagal menyimpan perubahan unit: ' + error.message);
+        showToast('Data sewa apartemen diperbarui!');
+      } else {
+        const { data, error } = await sb.from('apartments').insert(payload).select().single();
+        if (error) return alert('Gagal menambah unit: ' + error.message);
+        activeAptId = data.id;
+        showToast('Unit apartemen baru ditambahkan!');
+      }
       closeModal('apt-modal');
-      showToast('Unit apartemen baru ditambahkan!');
       await syncAllData(false);
     }
 
     async function deleteApartment(id) {
       if (apartments.length <= 1) return alert('Minimal harus ada 1 unit apartemen aktif.');
       if (!confirm('Hapus unit apartemen ini beserta seluruh transaksinya?')) return;
-      await sb.from('apartments').delete().eq('id', id);
+      const { error } = await sb.from('apartments').delete().eq('id', id);
+      if (error) return alert('Gagal menghapus unit: ' + error.message);
       activeAptId = null;
       showToast('Unit apartemen dihapus.');
       await syncAllData(false);
     }
 
-    function openRentPayModal() {
-      document.getElementById('rent-month').value = document.getElementById('filter-month').value;
-      document.getElementById('rent-year').value = document.getElementById('filter-year').value;
-      document.getElementById('rent-amount').value = apartment?.monthly_rent || 3000000;
-      document.getElementById('rent-date').value = new Date().toISOString().slice(0, 10);
+    function openRentPayModal(rentId = null) {
+      if (rentId) {
+        const r = rentPayments.find(x => x.id === rentId);
+        document.getElementById('rent-modal-title').textContent = 'Edit Pembayaran Sewa';
+        document.getElementById('rent-pay-id').value = r.id;
+        document.getElementById('rent-month').value = r.period_month;
+        document.getElementById('rent-year').value = r.period_year;
+        document.getElementById('rent-amount').value = r.amount;
+        document.getElementById('rent-date').value = r.payment_date || new Date().toISOString().slice(0, 10);
+        document.getElementById('rent-status').value = r.status;
+        document.getElementById('rent-method').value = r.payment_method;
+        document.getElementById('rent-notes').value = r.notes || '';
+      } else {
+        document.getElementById('rent-modal-title').textContent = 'Catat Pembayaran Sewa';
+        document.getElementById('rent-pay-id').value = '';
+        document.getElementById('rent-month').value = document.getElementById('filter-month').value;
+        document.getElementById('rent-year').value = document.getElementById('filter-year').value;
+        document.getElementById('rent-amount').value = apartment?.monthly_rent || 3000000;
+        document.getElementById('rent-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('rent-status').value = 'Sudah dibayar';
+        document.getElementById('rent-method').value = 'Transfer';
+        document.getElementById('rent-notes').value = '';
+      }
       document.getElementById('rent-modal').classList.remove('hidden');
     }
 
     async function saveRentPayment(e) {
       e.preventDefault();
+      const payId = document.getElementById('rent-pay-id').value;
       const month = Number(document.getElementById('rent-month').value);
       const year = Number(document.getElementById('rent-year').value);
-      const existing = getAptRentPayments().find(r => r.period_month === month && r.period_year === year);
+      const existing = payId
+        ? rentPayments.find(r => r.id === payId)
+        : getAptRentPayments().find(r => r.period_month === month && r.period_year === year);
 
       const payload = {
         user_id: currentUser.id,
@@ -1581,7 +1649,15 @@
 
       if (error) return alert('Gagal menyimpan: ' + error.message);
       closeModal('rent-modal');
-      showToast('Status sewa bulanan diperbarui!');
+      showToast('Status sewa bulanan tersimpan!');
+      await syncAllData(false);
+    }
+
+    async function deleteRentPayment(id) {
+      if (!confirm('Hapus riwayat pembayaran sewa ini?')) return;
+      const { error } = await sb.from('rent_payments').delete().eq('id', id);
+      if (error) return alert('Gagal menghapus: ' + error.message);
+      showToast('Riwayat pembayaran sewa dihapus.');
       await syncAllData(false);
     }
 
@@ -1677,16 +1753,16 @@
 
     // ================= PENGATURAN & PRICELIST =================
     function renderSettingsTab() {
-      // Daftar Unit Apartemen
       document.getElementById('settings-apt-list').innerHTML = apartments.map(a => `
-        <div class="p-2.5 rounded-xl border ${a.id === activeAptId ? 'bg-amber-50 border-amber-400' : 'bg-cream border-slate-200'} flex items-center justify-between text-xs">
+        <div class="p-2.5 rounded-xl border ${a.id === activeAptId ? 'bg-amber-50 border-amber-400' : 'bg-cream border-slate-200'} flex flex-wrap items-center justify-between gap-2 text-xs">
           <div>
             <span class="font-extrabold">${a.name}</span>
-            <span class="text-[11px] text-slate-500 ml-2">Modal: ${formatRp(a.monthly_rent)} • Tempo Tgl ${a.due_day}</span>
+            <span class="text-[11px] text-slate-600 block sm:inline sm:ml-2">Sewa: <strong>${formatRp(a.monthly_rent)}</strong> • Deposit: ${formatRp(a.deposit)} • Tempo Tgl ${a.due_day}</span>
           </div>
           <div class="flex gap-1.5">
-            ${a.id !== activeAptId ? `<button onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
-            ${apartments.length > 1 ? `<button onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
+            <button type="button" onclick="openAptModal(true, '${a.id}')" class="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-800 text-[10px] font-bold">Edit</button>
+            ${a.id !== activeAptId ? `<button type="button" onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
+            ${apartments.length > 1 ? `<button type="button" onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
           </div>
         </div>
       `).join('');
@@ -1705,7 +1781,6 @@
         document.getElementById('set-font').value = settings.font_size;
       }
 
-      // Render Price List & Paket Hemat Terpisah
       const regularPkgs = packages.filter(p => !p.name.startsWith('Paket Hemat:'));
       const hematPkgs = packages.filter(p => p.name.startsWith('Paket Hemat:'));
 
@@ -1716,8 +1791,8 @@
             <p class="text-[11px] font-bold text-amber-700">${formatRp(p.price)} <span class="text-slate-400 font-normal">(${p.duration_hours} jam)</span></p>
           </div>
           <div class="flex gap-1.5 shrink-0">
-            <button onclick="openPkgModal('${p.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 font-bold text-[11px]">Edit</button>
-            <button onclick="deletePackage('${p.id}')" class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 font-bold text-[11px]">Hapus</button>
+            <button type="button" onclick="openPkgModal('${p.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 font-bold text-[11px]">Edit</button>
+            <button type="button" onclick="deletePackage('${p.id}')" class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700 font-bold text-[11px]">Hapus</button>
           </div>
         </div>
       `;
@@ -1733,23 +1808,54 @@
 
     async function saveApartmentAndSettings(e) {
       e.preventDefault();
-      await sb.from('apartments').update({
-        name: document.getElementById('set-apt-name').value.trim(),
-        monthly_rent: Number(document.getElementById('set-apt-rent').value),
-        deposit: Number(document.getElementById('set-apt-deposit').value),
-        due_day: Number(document.getElementById('set-apt-due').value)
-      }).eq('id', apartment.id);
+      const btn = document.getElementById('btn-save-settings');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan...';
 
-      await sb.from('app_settings').update({
-        reminder_days_before: Number(document.getElementById('set-rem-days').value),
-        reminder_time: document.getElementById('set-rem-time').value,
-        initial_cash_balance: Number(document.getElementById('set-initial-cash').value),
-        theme: document.getElementById('set-theme').value,
-        font_size: document.getElementById('set-font').value
-      }).eq('user_id', currentUser.id);
+      try {
+        const aptPayload = {
+          user_id: currentUser.id,
+          name: document.getElementById('set-apt-name').value.trim(),
+          monthly_rent: Number(document.getElementById('set-apt-rent').value),
+          deposit: Number(document.getElementById('set-apt-deposit').value),
+          due_day: Number(document.getElementById('set-apt-due').value)
+        };
 
-      showToast('Pengaturan berhasil disimpan!');
-      await syncAllData(false);
+        if (apartment && apartment.id) {
+          const { error: aptErr } = await sb.from('apartments').update(aptPayload).eq('id', apartment.id);
+          if (aptErr) throw aptErr;
+        } else {
+          const { data: newApt, error: insErr } = await sb.from('apartments').insert(aptPayload).select().single();
+          if (insErr) throw insErr;
+          if (newApt) activeAptId = newApt.id;
+        }
+
+        const setPayload = {
+          user_id: currentUser.id,
+          reminder_days_before: Number(document.getElementById('set-rem-days').value),
+          reminder_time: document.getElementById('set-rem-time').value,
+          initial_cash_balance: Number(document.getElementById('set-initial-cash').value),
+          theme: document.getElementById('set-theme').value,
+          font_size: document.getElementById('set-font').value
+        };
+
+        const { data: existingSet } = await sb.from('app_settings').select('id').eq('user_id', currentUser.id).maybeSingle();
+        if (existingSet) {
+          const { error: setErr } = await sb.from('app_settings').update(setPayload).eq('user_id', currentUser.id);
+          if (setErr) throw setErr;
+        } else {
+          const { error: setInsErr } = await sb.from('app_settings').insert(setPayload);
+          if (setInsErr) throw setInsErr;
+        }
+
+        showToast('Pengaturan sewa apartemen berhasil disimpan!');
+        await syncAllData(false);
+      } catch (err) {
+        alert('Gagal menyimpan pengaturan: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Pengaturan Sewa & Aplikasi';
+      }
     }
 
     function openPkgModal(id = null) {
@@ -1786,9 +1892,11 @@
         price: Number(document.getElementById('pkg-price').value),
         duration_hours: Number(document.getElementById('pkg-hours').value)
       };
-      if (id) await sb.from('pricing_packages').update(payload).eq('id', id);
-      else await sb.from('pricing_packages').insert(payload);
+      const { error } = id
+        ? await sb.from('pricing_packages').update(payload).eq('id', id)
+        : await sb.from('pricing_packages').insert(payload);
 
+      if (error) return alert('Gagal menyimpan paket: ' + error.message);
       closeModal('pkg-modal');
       showToast('Pricelist berhasil diperbarui!');
       await syncAllData(false);
@@ -1796,7 +1904,8 @@
 
     async function deletePackage(id) {
       if (!confirm('Hapus item harga ini?')) return;
-      await sb.from('pricing_packages').delete().eq('id', id);
+      const { error } = await sb.from('pricing_packages').delete().eq('id', id);
+      if (error) return alert('Gagal menghapus paket: ' + error.message);
       showToast('Item harga dihapus.');
       await syncAllData(false);
     }
@@ -1805,7 +1914,8 @@
       if (!confirm('Kembalikan daftar harga ke Pricelist & Paket Hemat default (2 Jam 60K s/d 1 Minggu 950K)?')) return;
       await sb.from('pricing_packages').delete().eq('user_id', currentUser.id);
       const rows = DEFAULT_PACKAGES.map(p => ({ ...p, user_id: currentUser.id }));
-      await sb.from('pricing_packages').insert(rows);
+      const { error } = await sb.from('pricing_packages').insert(rows);
+      if (error) return alert('Gagal mereset pricelist: ' + error.message);
       showToast('Pricelist dikembalikan ke pengaturan default!');
       await syncAllData(false);
     }
