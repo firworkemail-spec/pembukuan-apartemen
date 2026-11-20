@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ApartemenKu — Pembukuan Saladin Mansion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF8F5',
+            creamDark: '#F2EDE4',
+            slate900: '#0F172A',
+            amber500: '#F59E0B',
+            amber600: '#D97706'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #FAF8F5; color: #0F172A; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .font-large { font-size: 112%; }
+    .dark-mode { background-color: #0F172A; color: #F8FAFC; }
+    .dark-mode .card-surface { background-color: #1E293B; border-color: #334155; color: #F8FAFC; }
+    .dark-mode .input-surface { background-color: #0F172A; border-color: #334155; color: #F8FAFC; }
+    .dark-mode .text-muted { color: #94A3B8; }
+    .card-surface { background-color: #FFFFFF; border: 1px solid #E2E8F0; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen pb-24 md:pb-8">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden max-w-xs rounded-xl bg-slate-900 text-white px-4 py-3 shadow-xl border border-amber-500/40 text-sm font-medium transition-all"></div>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-cream">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200 p-6 sm:p-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-amber-400 shadow-md">
+          <i data-lucide="building-2" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">ApartemenKu</h1>
+          <p class="text-xs font-medium text-amber-600">Sistem Pembukuan Saladin Mansion</p>
+        </div>
+      </div>
+
+      <div class="flex rounded-xl bg-creamDark p-1 mb-6">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-bold rounded-lg bg-slate-900 text-white shadow">Masuk</button>
+        <button id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-600">Daftar Akun</button>
+      </div>
+
+      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email</label>
+          <input type="email" id="auth-email" required placeholder="nama@email.com" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-amber-500 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+          <input type="password" id="auth-password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-amber-500 text-sm" />
+        </div>
+        <button type="submit" id="auth-submit-btn" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-sm shadow-md transition">
+          Masuk ke Aplikasi
+        </button>
+      </form>
+      <p id="auth-info" class="mt-4 text-xs text-center text-slate-500">Data tersinkronisasi aman dengan cloud Supabase.</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP SCREEN -->
+  <div id="app-screen" class="hidden">
+    <!-- TOP HEADER -->
+    <header class="sticky top-0 z-30 bg-slate-900 text-white shadow-md">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-900 flex items-center justify-center font-bold">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-extrabold text-base tracking-tight">ApartemenKu</h1>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Saladin Mansion</span>
+            </div>
+            <p id="header-user-email" class="text-[11px] text-slate-400 truncate max-w-[180px] sm:max-w-xs"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="syncAllData(true)" title="Sinkronkan Data" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+          <button onclick="handleLogout()" title="Keluar" class="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-1">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline">Keluar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden md:block bg-slate-800/80 border-t border-slate-700">
+        <div class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto no-scrollbar">
+          <button onclick="navigate('dashboard')" data-nav="dashboard" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-amber-500 text-amber-400">Dashboard</button>
+          <button onclick="navigate('transactions')" data-nav="transactions" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Transaksi Tamu</button>
+          <button onclick="navigate('expenses')" data-nav="expenses" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Pengeluaran</button>
+          <button onclick="navigate('calendar')" data-nav="calendar" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Kalender</button>
+          <button onclick="navigate('apartment')" data-nav="apartment" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Saladin Mansion</button>
+          <button onclick="navigate('reports')" data-nav="reports" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Laporan</button>
+          <button onclick="navigate('settings')" data-nav="settings" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Pengaturan</button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-6xl mx-auto px-4 pt-4 space-y-5">
+
+      <!-- FILTER PERIODE GLOBAL -->
+      <div class="card-surface rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-2">
+          <i data-lucide="calendar-days" class="w-4 h-4 text-amber-600"></i>
+          <span class="text-xs font-bold text-slate-600 text-muted">Periode Aktif:</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="filter-month" onchange="refreshUI()" class="input-surface text-xs font-bold px-3 py-2 rounded-xl border border-slate-300 bg-cream"></select>
+          <select id="filter-year" onchange="refreshUI()" class="input-surface text-xs font-bold px-3 py-2 rounded-xl border border-slate-300 bg-cream"></select>
+        </div>
+      </div>
+
+      <!-- REMINDER BANNER -->
+      <div id="reminder-banner" class="hidden rounded-2xl bg-amber-500/15 border border-amber-500 p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-900 flex items-center justify-center shrink-0">
+            <i data-lucide="bell-ring" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-xs font-extrabold text-amber-700" id="reminder-title">Pengingat Jatuh Tempo Sewa</p>
+            <p class="text-xs text-slate-700" id="reminder-desc"></p>
+          </div>
+        </div>
+        <button onclick="navigate('apartment')" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold shrink-0">Cek Sewa</button>
+      </div>
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <section id="view-dashboard" class="view-section space-y-5">
+        <!-- 3 PILAR KEUANGAN UTAMA (TIDAK DICAMPUR) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card-surface rounded-2xl p-4 shadow-sm border-l-4 border-l-emerald-500">
+            <div class="flex justify-between items-start">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 text-muted">A. Omzet Sewa Tamu</span>
+              <span class="p-1.5 rounded-lg bg-emerald-100 text-emerald-700"><i data-lucide="trending-up" class="w-4 h-4"></i></span>
+            </div>
+            <p id="dash-omzet" class="text-2xl font-extrabold mt-2 text-emerald-600">Rp0</p>
+            <p class="text-[11px] text-slate-500 text-muted mt-1">Total nilai sewa tamu bulan berjalan</p>
+          </div>
+
+          <div class="card-surface rounded-2xl p-4 shadow-sm border-l-4 border-l-amber-500">
+            <div class="flex justify-between items-start">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 text-muted">B. Laba Bersih Operasional</span>
+              <span class="p-1.5 rounded-lg bg-amber-100 text-amber-700"><i data-lucide="wallet" class="w-4 h-4"></i></span>
+            </div>
+            <p id="dash-net-profit" class="text-2xl font-extrabold mt-2">Rp0</p>
+            <p class="text-[11px] text-slate-500 text-muted mt-1">Omzet − Modal Sewa − Pengeluaran Ops</p>
+          </div>
+
+          <div class="card-surface rounded-2xl p-4 shadow-sm border-l-4 border-l-slate-900">
+            <div class="flex justify-between items-start">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 text-muted">C. Saldo Kas Aktual</span>
+              <span class="p-1.5 rounded-lg bg-slate-200 text-slate-900"><i data-lucide="landmark" class="w-4 h-4"></i></span>
+            </div>
+            <p id="dash-cash-balance" class="text-2xl font-extrabold mt-2 text-blue-600">Rp0</p>
+            <p class="text-[11px] text-slate-500 text-muted mt-1">Uang masuk lunas/DP − Uang keluar aktual</p>
+          </div>
+        </div>
+
+        <!-- METRIK OPERASIONAL & SEWA -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="card-surface rounded-2xl p-3.5">
+            <p class="text-[11px] font-bold text-slate-500 text-muted">Modal Sewa Bulanan</p>
+            <p id="dash-modal" class="text-base font-extrabold mt-1">Rp3.000.000</p>
+            <span id="dash-rent-status" class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Belum dibayar</span>
+          </div>
+          <div class="card-surface rounded-2xl p-3.5">
+            <p class="text-[11px] font-bold text-slate-500 text-muted">Pengeluaran Ops</p>
+            <p id="dash-expense" class="text-base font-extrabold text-rose-600 mt-1">Rp0</p>
+            <p class="text-[10px] text-slate-400 mt-1">Di luar modal sewa</p>
+          </div>
+          <div class="card-surface rounded-2xl p-3.5">
+            <p class="text-[11px] font-bold text-slate-500 text-muted">Transaksi & Rata-rata</p>
+            <p id="dash-tx-count" class="text-base font-extrabold mt-1">0 Transaksi</p>
+            <p id="dash-avg-price" class="text-[10px] text-amber-600 font-bold mt-1">Rata-rata: Rp0</p>
+          </div>
+          <div class="card-surface rounded-2xl p-3.5">
+            <p class="text-[11px] font-bold text-slate-500 text-muted">Tingkat Okupansi</p>
+            <p id="dash-occupancy" class="text-base font-extrabold text-emerald-600 mt-1">0%</p>
+            <p id="dash-due-countdown" class="text-[10px] text-slate-500 font-semibold mt-1">Tempo tgl 17</p>
+          </div>
+        </div>
+
+        <!-- ARUS KAS & TAMU HARI INI/BESOK -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="card-surface rounded-2xl p-4 space-y-3">
+            <h2 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="arrow-left-right" class="w-4 h-4 text-amber-500"></i> Ringkasan Arus Kas Bulan Ini</h2>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500 text-muted">Saldo Awal Kas</span>
+                <span id="cf-initial" class="font-bold">Rp0</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500 text-muted">Total Uang Masuk Aktual (Lunas & DP)</span>
+                <span id="cf-in" class="font-bold text-emerald-600">+ Rp0</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500 text-muted">Piutang Tamu (Belum Lunas)</span>
+                <span id="cf-receivable" class="font-bold text-amber-600">Rp0</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500 text-muted">Total Uang Keluar Aktual (Sewa + Ops)</span>
+                <span id="cf-out" class="font-bold text-rose-600">- Rp0</span>
+              </div>
+              <div class="flex justify-between pt-1 text-sm font-extrabold">
+                <span>Saldo Akhir Kas</span>
+                <span id="cf-final" class="text-blue-600">Rp0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-surface rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-amber-500"></i> Jadwal Tamu Terdekat</h2>
+              <button onclick="openTxModal()" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold">+ Tamu Baru</button>
+            </div>
+            <div id="dash-upcoming-guests" class="space-y-2 text-xs">
+              <p class="text-slate-400 py-4 text-center">Belum ada jadwal tamu terdekat.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: TRANSAKSI TAMU ==================== -->
+      <section id="view-transactions" class="view-section hidden space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-extrabold">Transaksi Penyewaan Tamu</h2>
+            <p class="text-xs text-slate-500 text-muted">Saladin Mansion • Perhitungan otomatis modal prorata & estimasi profit per transaksi</p>
+          </div>
+          <button onclick="openTxModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xs flex items-center gap-1.5 shadow">
+            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Transaksi
+          </button>
+        </div>
+
+        <!-- FILTER STATUS -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar">
+          <button onclick="setTxFilter('ALL')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold" data-status="ALL">Semua</button>
+          <button onclick="setTxFilter('Lunas')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold" data-status="Lunas">Lunas</button>
+          <button onclick="setTxFilter('DP')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold" data-status="DP">DP</button>
+          <button onclick="setTxFilter('Belum bayar')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold" data-status="Belum bayar">Belum Bayar</button>
+        </div>
+
+        <div id="tx-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ==================== TAB 3: PENGELUARAN ==================== -->
+      <section id="view-expenses" class="view-section hidden space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-extrabold">Pengeluaran Operasional</h2>
+            <p class="text-xs text-slate-500 text-muted">Tercatat terpisah dari pemasukan tamu (Listrik, Air, Laundry, Kebersihan, dll)</p>
+          </div>
+          <button onclick="openExpModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow">
+            <i data-lucide="plus" class="w-4 h-4"></i> Catat Pengeluaran
+          </button>
+        </div>
+
+        <div id="exp-list" class="space-y-3"></div>
+      </section>
+
+      <!-- ==================== TAB 4: KALENDER OKUPANSI ==================== -->
+      <section id="view-calendar" class="view-section hidden space-y-4">
+        <div class="card-surface rounded-2xl p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="text-base font-extrabold">Kalender Okupansi Saladin Mansion</h2>
+              <p class="text-xs text-slate-500 text-muted">Pantau tanggal terisi dan kosong secara visual</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-bold">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span> Terisi</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-emerald-100 border border-emerald-400 inline-block"></span> Kosong</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-500 mb-2">
+            <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
+          </div>
+          <div id="calendar-grid" class="grid grid-cols-7 gap-1.5"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card-surface rounded-2xl p-4">
+            <h3 class="text-xs font-extrabold uppercase text-amber-600 mb-2">Tamu Hari Ini</h3>
+            <div id="cal-today-list" class="space-y-2 text-xs"></div>
+          </div>
+          <div class="card-surface rounded-2xl p-4">
+            <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-2">Tamu Besok</h3>
+            <div id="cal-tomorrow-list" class="space-y-2 text-xs"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: PENGELOLAAN SALADIN MANSION ==================== -->
+      <section id="view-apartment" class="view-section hidden space-y-4">
+        <div class="card-surface rounded-2xl p-5 space-y-4 border-t-4 border-t-amber-500">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">Unit Aktif Tunggal</span>
+              <h2 id="apt-name-display" class="text-xl font-extrabold mt-2">Saladin Mansion</h2>
+              <p class="text-xs text-slate-500 text-muted">Jl. Raya Babakan Madang / Margonda • Jatuh tempo setiap tanggal <span id="apt-due-display" class="font-bold">17</span></p>
+            </div>
+            <button onclick="openRentPayModal()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-extrabold shadow flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i> Catat Bayar Sewa Bulan Ini
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            <div class="p-3 rounded-xl bg-cream border border-slate-200">
+              <p class="text-[11px] text-slate-500 font-bold">Modal Sewa Bulanan</p>
+              <p id="apt-rent-display" class="text-base font-extrabold text-slate-900 mt-0.5">Rp3.000.000</p>
+            </div>
+            <div class="p-3 rounded-xl bg-cream border border-slate-200">
+              <p class="text-[11px] text-slate-500 font-bold">Deposit</p>
+              <p id="apt-deposit-display" class="text-base font-extrabold text-slate-900 mt-0.5">Rp0</p>
+            </div>
+            <div class="p-3 rounded-xl bg-cream border border-slate-200">
+              <p class="text-[11px] text-slate-500 font-bold">Hitung Mundur Tempo</p>
+              <p id="apt-countdown-display" class="text-base font-extrabold text-amber-600 mt-0.5">-</p>
+            </div>
+            <div class="p-3 rounded-xl bg-cream border border-slate-200">
+              <p class="text-[11px] text-slate-500 font-bold">Laba Bersih Bulan Ini</p>
+              <p id="apt-profit-display" class="text-base font-extrabold text-emerald-600 mt-0.5">Rp0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-2xl p-4 space-y-3">
+          <h3 class="text-sm font-extrabold">Riwayat Pembayaran Sewa ke Pemilik</h3>
+          <div id="rent-history-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 6: LAPORAN KEUANGAN ==================== -->
+      <section id="view-reports" class="view-section hidden space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-lg font-extrabold">Laporan Keuangan Otomatis</h2>
+            <p class="text-xs text-slate-500 text-muted">Perbandingan bulanan, grafik performa & ekspor laporan</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="shareReportWhatsApp()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5">
+              <i data-lucide="share-2" class="w-4 h-4"></i> Share WhatsApp
+            </button>
+            <button onclick="exportCSV()" class="px-3.5 py-2 rounded-xl bg-slate-900 text-amber-400 text-xs font-extrabold flex items-center gap-1.5">
+              <i data-lucide="download" class="w-4 h-4"></i> Ekspor Excel / CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- PERBANDINGAN BULAN INI VS BULAN LALU -->
+        <div class="card-surface rounded-2xl p-4 overflow-x-auto">
+          <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Perbandingan Bulan Berjalan vs Bulan Sebelumnya</h3>
+          <table class="w-full text-xs text-left">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500">
+                <th class="py-2">Indikator</th>
+                <th class="py-2">Bulan Sebelumnya</th>
+                <th class="py-2">Bulan Dipilih</th>
+                <th class="py-2">Selisih</th>
+              </tr>
+            </thead>
+            <tbody id="report-comparison-body" class="divide-y divide-slate-100 font-semibold"></tbody>
+          </table>
+        </div>
+
+        <!-- GRAFIK -->
+        <div class="card-surface rounded-2xl p-4">
+          <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Grafik Pemasukan, Pengeluaran & Keuntungan (6 Bulan Terakhir)</h3>
+          <div class="h-64">
+            <canvas id="financeChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 7: PENGATURAN ==================== -->
+      <section id="view-settings" class="view-section hidden space-y-4">
+        <!-- PENGATURAN APARTEMEN & MODAL -->
+        <div class="card-surface rounded-2xl p-4 space-y-3">
+          <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Data Saladin Mansion & Pengingat</h3>
+          <form onsubmit="saveApartmentAndSettings(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block font-bold mb-1">Nama Apartemen</label>
+              <input type="text" id="set-apt-name" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Modal Sewa Bulanan (Rp)</label>
+              <input type="number" id="set-apt-rent" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Deposit (Rp)</label>
+              <input type="number" id="set-apt-deposit" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Tanggal Jatuh Tempo (1-31)</label>
+              <input type="number" id="set-apt-due" min="1" max="31" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Pengingat Sebelum Tempo (Hari)</label>
+              <input type="number" id="set-rem-days" min="1" max="30" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Jam Pengingat (WIB)</label>
+              <input type="time" id="set-rem-time" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Saldo Awal Kas (Rp)</label>
+              <input type="number" id="set-initial-cash" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Tema & Ukuran Teks</label>
+              <div class="flex gap-2">
+                <select id="set-theme" class="input-surface flex-1 px-3 py-2.5 rounded-xl border border-slate-300">
+                  <option value="slate-amber">Cream & Slate (Terang)</option>
+                  <option value="dark">Slate Gelap</option>
+                </select>
+                <select id="set-font" class="input-surface flex-1 px-3 py-2.5 rounded-xl border border-slate-300">
+                  <option value="normal">Font Normal</option>
+                  <option value="large">Font Besar</option>
+                </select>
+              </div>
+            </div>
+            <div class="sm:col-span-2 pt-1">
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 text-amber-400 font-extrabold text-xs">Simpan Pengaturan</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- PENGATURAN PAKET HARGA -->
+        <div class="card-surface rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-amber-500"></i> Daftar Paket Harga Sewa</h3>
+            <button onclick="openPkgModal()" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold">+ Paket Baru</button>
+          </div>
+          <div id="settings-pkg-list" class="divide-y divide-slate-100 text-xs"></div>
+        </div>
+
+        <!-- BACKUP & RESTORE JSON -->
+        <div class="card-surface rounded-2xl p-4 space-y-3">
+          <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="database-backup" class="w-4 h-4 text-amber-500"></i> Backup & Restore Data</h3>
+          <p class="text-xs text-slate-500 text-muted">Unduh salinan penuh database Anda dalam format JSON untuk cadangan offline.</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="downloadBackupJSON()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">Download Backup (.JSON)</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900 text-slate-400 border-t border-slate-800 grid grid-cols-5 py-1.5 px-1 text-[10px] font-bold">
+      <button onclick="navigate('dashboard')" data-mnav="dashboard" class="mnav-btn flex flex-col items-center gap-0.5 py-1 text-amber-400">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Beranda</span>
+      </button>
+      <button onclick="navigate('transactions')" data-mnav="transactions" class="mnav-btn flex flex-col items-center gap-0.5 py-1">
+        <i data-lucide="receipt" class="w-4 h-4"></i><span>Tamu</span>
+      </button>
+      <button onclick="navigate('expenses')" data-mnav="expenses" class="mnav-btn flex flex-col items-center gap-0.5 py-1">
+        <i data-lucide="wallet-cards" class="w-4 h-4"></i><span>Keluar</span>
+      </button>
+      <button onclick="navigate('calendar')" data-mnav="calendar" class="mnav-btn flex flex-col items-center gap-0.5 py-1">
+        <i data-lucide="calendar" class="w-4 h-4"></i><span>Kalender</span>
+      </button>
+      <button onclick="openMoreMenu()" class="flex flex-col items-center gap-0.5 py-1">
+        <i data-lucide="menu" class="w-4 h-4"></i><span>Lainnya</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MOBILE MORE MENU SHEET -->
+  <div id="more-menu-modal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-end">
+    <div class="w-full bg-white rounded-t-3xl p-5 space-y-3 text-slate-900">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <span class="font-extrabold text-sm">Menu Lainnya</span>
+        <button onclick="closeModal('more-menu-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <button onclick="navigate('apartment'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
+        <i data-lucide="building-2" class="w-4 h-4 text-amber-600"></i> Kelola Saladin Mansion & Sewa Bulanan
+      </button>
+      <button onclick="navigate('reports'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
+        <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-600"></i> Laporan Keuangan & Grafik
+      </button>
+      <button onclick="navigate('settings'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
+        <i data-lucide="settings" class="w-4 h-4 text-amber-600"></i> Pengaturan Paket, Modal & Backup
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL TRANSAKSI TAMU -->
+  <div id="tx-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-lg bg-white text-slate-900 rounded-3xl p-5 space-y-4 my-auto max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 id="tx-modal-title" class="font-extrabold text-base">Tambah Transaksi Tamu</h3>
+        <button onclick="closeModal('tx-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveTransaction(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="tx-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Tanggal Transaksi</label>
+            <input type="date" id="tx-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Paket Penyewaan</label>
+            <select id="tx-package" onchange="onPackageSelect()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300"></select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Nama Tamu</label>
+            <input type="text" id="tx-guest" required placeholder="Nama lengkap tamu" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">No. WhatsApp Tamu</label>
+            <input type="tel" id="tx-wa" placeholder="0812xxxx" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Check-In</label>
+            <input type="datetime-local" id="tx-checkin" onchange="calcDurationFromDates()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Check-Out</label>
+            <input type="datetime-local" id="tx-checkout" onchange="calcDurationFromDates()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Harga Sewa Total (Rp)</label>
+            <input type="number" id="tx-amount" oninput="syncPaidAmount()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Durasi Hitung Modal (Hari)</label>
+            <input type="number" step="0.1" id="tx-duration" required value="1" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-bold mb-1">Metode</label>
+            <select id="tx-method" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Transfer">Transfer</option>
+              <option value="Tunai">Tunai</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Status</label>
+            <select id="tx-status" onchange="syncPaidAmount()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Lunas">Lunas</option>
+              <option value="DP">DP</option>
+              <option value="Belum bayar">Belum bayar</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Uang Diterima</label>
+            <input type="number" id="tx-paid" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Catatan Tambahan</label>
+          <input type="text" id="tx-notes" placeholder="Opsional..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('tx-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-900 font-extrabold">Simpan Transaksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PENGELUARAN -->
+  <div id="exp-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white text-slate-900 rounded-3xl p-5 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 id="exp-modal-title" class="font-extrabold text-base">Catat Pengeluaran Operasional</h3>
+        <button onclick="closeModal('exp-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveExpense(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="exp-id" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Tanggal</label>
+            <input type="date" id="exp-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Kategori</label>
+            <select id="exp-category" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Listrik">Listrik</option>
+              <option value="Air">Air</option>
+              <option value="Laundry">Laundry</option>
+              <option value="Kebersihan">Kebersihan</option>
+              <option value="Perbaikan">Perbaikan</option>
+              <option value="Perlengkapan apartemen">Perlengkapan apartemen</option>
+              <option value="Biaya operasional lainnya">Biaya operasional lainnya</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Keterangan</label>
+          <input type="text" id="exp-desc" required placeholder="Contoh: Token listrik 200rb" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Nominal (Rp)</label>
+            <input type="number" id="exp-amount" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Metode Pembayaran</label>
+            <select id="exp-method" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Transfer">Transfer</option>
+              <option value="Tunai">Tunai</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Catatan</label>
+          <input type="text" id="exp-notes" placeholder="Opsional..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('exp-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-rose-600 text-white font-extrabold">Simpan Pengeluaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PEMBAYARAN SEWA BULANAN -->
+  <div id="rent-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white text-slate-900 rounded-3xl p-5 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-extrabold text-base">Pembayaran Sewa Saladin Mansion</h3>
+        <button onclick="closeModal('rent-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveRentPayment(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Bulan Periode</label>
+            <select id="rent-month" class="w-full px-3 py-2.5 rounded-xl border border-slate-300"></select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Tahun</label>
+            <input type="number" id="rent-year" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Nominal Sewa (Rp)</label>
+            <input type="number" id="rent-amount" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Tanggal Bayar</label>
+            <input type="date" id="rent-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">Status</label>
+            <select id="rent-status" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Sudah dibayar">Sudah dibayar</option>
+              <option value="Belum dibayar">Belum dibayar</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold mb-1">Metode</label>
+            <select id="rent-method" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+              <option value="Transfer">Transfer</option>
+              <option value="Tunai">Tunai</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Catatan</label>
+          <input type="text" id="rent-notes" placeholder="Bukti transfer / keterangan..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('rent-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-slate-900 text-amber-400 font-extrabold">Simpan Pembayaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL PAKET HARGA -->
+  <div id="pkg-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 id="pkg-modal-title" class="font-extrabold text-base">Tambah / Edit Paket</h3>
+        <button onclick="closeModal('pkg-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="savePackage(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="pkg-id" />
+        <div>
+          <label class="block font-bold mb-1">Nama Paket</label>
+          <input type="text" id="pkg-name" required placeholder="Contoh: 3 Jam / Weekend" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Harga Sewa (Rp)</label>
+          <input type="number" id="pkg-price" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Durasi Paket (Jam)</label>
+          <input type="number" id="pkg-hours" required value="3" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('pkg-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-900 font-extrabold">Simpan Paket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ================= KONFIGURASI SUPABASE =================
+    const SUPABASE_URL = 'https://wllpaiutdukdgpegaiio.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_K2dXUYg2Dm4qoaBW9KW9Jw_bV_ga6ZU';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ================= STATE APLIKASI =================
+    let currentUser = null;
+    let authMode = 'login';
+    let apartment = null;
+    let packages = [];
+    let transactions = [];
+    let rentPayments = [];
+    let settings = null;
+    let txStatusFilter = 'ALL';
+    let financeChartInstance = null;
+
+    const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+    // ================= UTILITAS =================
+    const formatRp = (num) => 'Rp' + Math.round(Number(num || 0)).toLocaleString('id-ID');
+    const showToast = (msg) => {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3200);
+    };
+    const closeModal = (id) => document.getElementById(id).classList.add('hidden');
+    const openMoreMenu = () => document.getElementById('more-menu-modal').classList.remove('hidden');
+
+    // ================= INISIALISASI AWAL =================
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      initPeriodSelectors();
+
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        enterApp();
+      }
+
+      sb.auth.onAuthStateChange((_event, session) => {
+        if (session) {
+          currentUser = session.user;
+          enterApp();
+        } else {
+          currentUser = null;
+          document.getElementById('auth-screen').classList.remove('hidden');
+          document.getElementById('app-screen').classList.add('hidden');
+        }
+      });
+    });
+
+    function initPeriodSelectors() {
+      const now = new Date();
+      const mSel = document.getElementById('filter-month');
+      const ySel = document.getElementById('filter-year');
+      const rMSel = document.getElementById('rent-month');
+      mSel.innerHTML = MONTHS.map((m, i) => `<option value="${i + 1}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+      rMSel.innerHTML = MONTHS.map((m, i) => `<option value="${i + 1}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+      let years = '';
+      for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 2; y++) {
+        years += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}</option>`;
+      }
+      ySel.innerHTML = years;
+    }
+
+    // ================= AUTHENTIKASI =================
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const loginBtn = document.getElementById('tab-login');
+      const regBtn = document.getElementById('tab-register');
+      const submitBtn = document.getElementById('auth-submit-btn');
+      if (mode === 'login') {
+        loginBtn.className = 'flex-1 py-2 text-sm font-bold rounded-lg bg-slate-900 text-white shadow';
+        regBtn.className = 'flex-1 py-2 text-sm font-bold rounded-lg text-slate-600';
+        submitBtn.textContent = 'Masuk ke Aplikasi';
+      } else {
+        regBtn.className = 'flex-1 py-2 text-sm font-bold rounded-lg bg-slate-900 text-white shadow';
+        loginBtn.className = 'flex-1 py-2 text-sm font-bold rounded-lg text-slate-600';
+        submitBtn.textContent = 'Buat Akun Baru';
+      }
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const btn = document.getElementById('auth-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Memproses...';
+
+      try {
+        if (authMode === 'login') {
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast('Berhasil masuk!');
+        } else {
+          const { data, error } = await sb.auth.signUp({ email, password });
+          if (error) throw error;
+          if (data.session) {
+            showToast('Akun berhasil dibuat!');
+          } else {
+            showToast('Pendaftaran berhasil! Silakan cek email atau langsung login.');
+            switchAuthTab('login');
+          }
+        }
+      } catch (err) {
+        alert('Gagal: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = authMode === 'login' ? 'Masuk ke Aplikasi' : 'Buat Akun Baru';
+      }
+    }
+
+    async function handleLogout() {
+      await sb.auth.signOut();
+      showToast('Anda telah keluar.');
+    }
+
+    async function enterApp() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('header-user-email').textContent = currentUser.email;
+
+      await sb.rpc('initialize_my_account');
+      await syncAllData(false);
+    }
+
+    // ================= SINKRONISASI DATA SUPABASE =================
+    async function syncAllData(notify = true) {
+      try {
+        const [aptRes, pkgRes, txRes, rentRes, setRes] = await Promise.all([
+          sb.from('apartments').select('*').limit(1).single(),
+          sb.from('pricing_packages').select('*').order('price', { ascending: true }),
+          sb.from('transactions').select('*').order('transaction_date', { ascending: false }),
+          sb.from('rent_payments').select('*').order('period_year', { ascending: false }),
+          sb.from('app_settings').select('*').limit(1).single()
+        ]);
+
+        apartment = aptRes.data || { name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 };
+        packages = pkgRes.data || [];
+        transactions = txRes.data || [];
+        rentPayments = rentRes.data || [];
+        settings = setRes.data || { reminder_days_before: 7, reminder_time: '09:00', initial_cash_balance: 0, theme: 'slate-amber', font_size: 'normal' };
+
+        applyAppearance();
+        refreshUI();
+        if (notify) showToast('Data tersinkronisasi!');
+      } catch (err) {
+        console.error(err);
+        showToast('Gagal memuat sebagian data.');
+      }
+    }
+
+    function applyAppearance() {
+      if (!settings) return;
+      document.body.classList.toggle('dark-mode', settings.theme === 'dark');
+      document.body.classList.toggle('font-large', settings.font_size === 'large');
+    }
+
+    // ================= NAVIGASI =================
+    function navigate(view) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + view).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const active = btn.dataset.nav === view;
+        btn.className = active
+          ? 'nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-amber-500 text-amber-400'
+          : 'nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white';
+      });
+      document.querySelectorAll('.mnav-btn').forEach(btn => {
+        btn.classList.toggle('text-amber-400', btn.dataset.mnav === view);
+      });
+      if (view === 'reports') renderChart();
+      lucide.createIcons();
+    }
+
+    // ================= PERHITUNGAN & RENDER UI =================
+    function getMonthMetrics(month, year) {
+      const mIncomes = transactions.filter(t => {
+        if (t.type !== 'income') return false;
+        const d = new Date(t.transaction_date);
+        return (d.getMonth() + 1) === month && d.getFullYear() === year;
+      });
+      const mExpenses = transactions.filter(t => {
+        if (t.type !== 'expense') return false;
+        const d = new Date(t.transaction_date);
+        return (d.getMonth() + 1) === month && d.getFullYear() === year;
+      });
+      const rentRecord = rentPayments.find(r => r.period_month === month && r.period_year === year);
+
+      const omzet = mIncomes.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const actualCashIn = mIncomes.reduce((sum, t) => {
+        if (t.payment_status === 'Belum bayar') return sum;
+        return sum + Number(t.paid_amount || 0);
+      }, 0);
+      const receivable = omzet - actualCashIn;
+
+      const opsExpense = mExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const monthlyCapital = Number(apartment?.monthly_rent || 3000000);
+      const isRentPaid = rentRecord && rentRecord.status === 'Sudah dibayar';
+      const actualRentOut = isRentPaid ? Number(rentRecord.amount || monthlyCapital) : 0;
+
+      const netProfit = omzet - monthlyCapital - opsExpense;
+
+      const totalDaysBooked = mIncomes.reduce((sum, t) => sum + Number(t.duration_days || 0), 0);
+      const occupancyPct = Math.min(100, Math.round((totalDaysBooked / 30) * 100));
+      const avgPrice = mIncomes.length ? omzet / mIncomes.length : 0;
+
+      return {
+        mIncomes, mExpenses, rentRecord, isRentPaid,
+        omzet, actualCashIn, receivable, opsExpense,
+        monthlyCapital, actualRentOut, netProfit,
+        occupancyPct, avgPrice, txCount: mIncomes.length
+      };
+    }
+
+    function getCumulativeCashBalance(targetMonth, targetYear) {
+      let cash = Number(settings?.initial_cash_balance || 0);
+      transactions.forEach(t => {
+        const d = new Date(t.transaction_date);
+        const y = d.getFullYear();
+        const m = d.getMonth() + 1;
+        if (y < targetYear || (y === targetYear && m <= targetMonth)) {
+          if (t.type === 'income' && t.payment_status !== 'Belum bayar') {
+            cash += Number(t.paid_amount || 0);
+          } else if (t.type === 'expense') {
+            cash -= Number(t.amount || 0);
+          }
+        }
+      });
+      rentPayments.forEach(r => {
+        if (r.status === 'Sudah dibayar') {
+          if (r.period_year < targetYear || (r.period_year === targetYear && r.period_month <= targetMonth)) {
+            cash -= Number(r.amount || 0);
+          }
+        }
+      });
+      return cash;
+    }
+
+    function refreshUI() {
+      const month = Number(document.getElementById('filter-month').value);
+      const year = Number(document.getElementById('filter-year').value);
+      const m = getMonthMetrics(month, year);
+      const cashBalance = getCumulativeCashBalance(month, year);
+
+      document.getElementById('dash-omzet').textContent = formatRp(m.omzet);
+      const npEl = document.getElementById('dash-net-profit');
+      npEl.textContent = formatRp(m.netProfit);
+      npEl.className = 'text-2xl font-extrabold mt-2 ' + (m.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600');
+      document.getElementById('dash-cash-balance').textContent = formatRp(cashBalance);
+
+      document.getElementById('dash-modal').textContent = formatRp(m.monthlyCapital);
+      const statusBadge = document.getElementById('dash-rent-status');
+      if (m.isRentPaid) {
+        statusBadge.textContent = 'Sudah dibayar';
+        statusBadge.className = 'inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+      } else {
+        statusBadge.textContent = 'Belum dibayar';
+        statusBadge.className = 'inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700';
+      }
+
+      document.getElementById('dash-expense').textContent = formatRp(m.opsExpense);
+      document.getElementById('dash-tx-count').textContent = `${m.txCount} Transaksi`;
+      document.getElementById('dash-avg-price').textContent = `Rata-rata: ${formatRp(m.avgPrice)}`;
+      document.getElementById('dash-occupancy').textContent = `${m.occupancyPct}%`;
+
+      const today = new Date();
+      const dueDay = Number(apartment?.due_day || 17);
+      let dueDate = new Date(today.getFullYear(), today.getMonth(), dueDay);
+      if (today.getDate() > dueDay && m.isRentPaid) {
+        dueDate = new Date(today.getFullYear(), today.getMonth() + 1, dueDay);
+      }
+      const diffDays = Math.ceil((dueDate - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / (1000 * 60 * 60 * 24));
+      const countdownText = diffDays === 0 ? 'Hari ini jatuh tempo!' : diffDays > 0 ? `H-${diffDays} (Tgl ${dueDay})` : `Lewat ${Math.abs(diffDays)} hari`;
+      document.getElementById('dash-due-countdown').textContent = countdownText;
+
+      const remDays = Number(settings?.reminder_days_before || 7);
+      const banner = document.getElementById('reminder-banner');
+      if (!m.isRentPaid && diffDays <= remDays) {
+        banner.classList.remove('hidden');
+        document.getElementById('reminder-title').textContent = `Pengingat Sewa Saladin Mansion (${countdownText})`;
+        document.getElementById('reminder-desc').textContent = `Tagihan sewa ${formatRp(m.monthlyCapital)} jatuh tempo tanggal ${dueDay}. Pengingat aktif pukul ${settings?.reminder_time || '09:00'} WIB.`;
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      const prevCash = cashBalance - m.actualCashIn + m.opsExpense + m.actualRentOut;
+      document.getElementById('cf-initial').textContent = formatRp(prevCash);
+      document.getElementById('cf-in').textContent = '+ ' + formatRp(m.actualCashIn);
+      document.getElementById('cf-receivable').textContent = formatRp(m.receivable);
+      document.getElementById('cf-out').textContent = '- ' + formatRp(m.opsExpense + m.actualRentOut);
+      document.getElementById('cf-final').textContent = formatRp(cashBalance);
+
+      renderUpcomingGuests();
+      renderTransactionsList(m.mIncomes);
+      renderExpensesList(m.mExpenses);
+      renderCalendar(month, year, m.mIncomes);
+      renderApartmentTab(m, countdownText);
+      renderReportsComparison(month, year, m);
+      renderSettingsTab();
+      lucide.createIcons();
+    }
+
+    function renderUpcomingGuests() {
+      const now = new Date();
+      const upcoming = transactions
+        .filter(t => t.type === 'income' && t.check_out && new Date(t.check_out) >= now)
+        .sort((a, b) => new Date(a.check_in) - new Date(b.check_in))
+        .slice(0, 4);
+
+      const container = document.getElementById('dash-upcoming-guests');
+      if (!upcoming.length) {
+        container.innerHTML = '<p class="text-slate-400 py-4 text-center">Tidak ada tamu aktif atau terjadwal berikutnya.</p>';
+        return;
+      }
+      container.innerHTML = upcoming.map(t => `
+        <div class="p-2.5 rounded-xl bg-cream border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="font-extrabold text-slate-900">${t.guest_name} <span class="text-amber-600">(${t.package_name || 'Custom'})</span></p>
+            <p class="text-[11px] text-slate-500">Check-in: ${new Date(t.check_in).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</p>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-1 rounded-lg ${t.payment_status === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}">${t.payment_status}</span>
+        </div>
+      `).join('');
+    }
+
+    // ================= TRANSAKSI TAMU CRUD =================
+    function setTxFilter(status) {
+      txStatusFilter = status;
+      document.querySelectorAll('.tx-filter-btn').forEach(b => {
+        b.className = b.dataset.status === status
+          ? 'tx-filter-btn px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold'
+          : 'tx-filter-btn px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold';
+      });
+      refreshUI();
+    }
+
+    function renderTransactionsList(list) {
+      const filtered = txStatusFilter === 'ALL' ? list : list.filter(t => t.payment_status === txStatusFilter);
+      const container = document.getElementById('tx-list');
+      if (!filtered.length) {
+        container.innerHTML = '<div class="card-surface rounded-2xl p-8 text-center text-xs text-slate-400">Belum ada transaksi tamu pada periode ini.</div>';
+        return;
+      }
+      const dailyCap = Number(apartment?.monthly_rent || 3000000) / 30;
+      container.innerHTML = filtered.map(t => {
+        const prorata = Math.round(dailyCap * Number(t.duration_days || 1));
+        const estProfit = Number(t.amount) - prorata;
+        const badgeClass = t.payment_status === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : t.payment_status === 'DP' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700';
+        const waLink = t.guest_whatsapp ? `https://wa.me/${t.guest_whatsapp.replace(/^0/, '62').replace(/\D/g, '')}` : null;
+
+        return `
+          <div class="card-surface rounded-2xl p-4 shadow-sm space-y-2.5">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-extrabold text-sm">${t.guest_name}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}">${t.payment_status}</span>
+                </div>
+                <p class="text-xs text-amber-600 font-bold mt-0.5">${t.package_name || 'Paket Custom'} • ${t.payment_method}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-extrabold text-emerald-600">${formatRp(t.amount)}</p>
+                <p class="text-[10px] text-slate-500">Est. Profit: <strong class="${estProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatRp(estProfit)}</strong></p>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-500 text-muted grid grid-cols-1 sm:grid-cols-2 gap-1 bg-cream/60 p-2.5 rounded-xl">
+              <div>In: <strong>${t.check_in ? new Date(t.check_in).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</strong></div>
+              <div>Out: <strong>${t.check_out ? new Date(t.check_out).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}</strong></div>
+              <div>Diterima: <strong>${formatRp(t.paid_amount)}</strong></div>
+              <div>Modal Prorata (${t.duration_days} hr): <strong>${formatRp(prorata)}</strong></div>
+            </div>
+            ${t.notes ? `<p class="text-[11px] italic text-slate-500">Catatan: ${t.notes}</p>` : ''}
+            <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+              ${waLink ? `<a href="${waLink}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold">Chat WA</a>` : ''}
+              <button onclick="openTxModal('${t.id}')" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-bold">Edit</button>
+              <button onclick="deleteTransaction('${t.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-[11px] font-bold">Hapus</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openTxModal(id = null) {
+      const pkgSel = document.getElementById('tx-package');
+      pkgSel.innerHTML = packages.map(p => `<option value="${p.name}" data-price="${p.price}" data-hours="${p.duration_hours}">${p.name} (${formatRp(p.price)})</option>`).join('') +
+        `<option value="Custom" data-price="0" data-hours="24">Custom (Atur Manual)</option>`;
+
+      if (id) {
+        const t = transactions.find(x => x.id === id);
+        document.getElementById('tx-modal-title').textContent = 'Edit Transaksi Tamu';
+        document.getElementById('tx-id').value = t.id;
+        document.getElementById('tx-date').value = t.transaction_date;
+        document.getElementById('tx-package').value = t.package_name || 'Custom';
+        document.getElementById('tx-guest').value = t.guest_name;
+        document.getElementById('tx-wa').value = t.guest_whatsapp || '';
+        document.getElementById('tx-checkin').value = t.check_in ? t.check_in.slice(0, 16) : '';
+        document.getElementById('tx-checkout').value = t.check_out ? t.check_out.slice(0, 16) : '';
+        document.getElementById('tx-amount').value = t.amount;
+        document.getElementById('tx-duration').value = t.duration_days;
+        document.getElementById('tx-method').value = t.payment_method;
+        document.getElementById('tx-status').value = t.payment_status;
+        document.getElementById('tx-paid').value = t.paid_amount;
+        document.getElementById('tx-notes').value = t.notes || '';
+      } else {
+        document.getElementById('tx-modal-title').textContent = 'Tambah Transaksi Tamu';
+        document.getElementById('tx-id').value = '';
+        const now = new Date();
+        const localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
+        document.getElementById('tx-date').value = localIso.slice(0, 10);
+        document.getElementById('tx-guest').value = '';
+        document.getElementById('tx-wa').value = '';
+        document.getElementById('tx-checkin').value = localIso.slice(0, 16);
+        document.getElementById('tx-status').value = 'Lunas';
+        document.getElementById('tx-method').value = 'Transfer';
+        document.getElementById('tx-notes').value = '';
+        onPackageSelect();
+      }
+      document.getElementById('tx-modal').classList.remove('hidden');
+    }
+
+    function onPackageSelect() {
+      const sel = document.getElementById('tx-package');
+      const opt = sel.options[sel.selectedIndex];
+      const price = Number(opt.dataset.price || 0);
+      const hours = Number(opt.dataset.hours || 24);
+      if (price > 0) document.getElementById('tx-amount').value = price;
+      document.getElementById('tx-duration').value = Math.max(0.25, +(hours / 24).toFixed(2));
+
+      const ci = document.getElementById('tx-checkin').value;
+      if (ci) {
+        const d = new Date(ci);
+        d.setHours(d.getHours() + hours);
+        const coIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('tx-checkout').value = coIso;
+      }
+      syncPaidAmount();
+    }
+
+    function calcDurationFromDates() {
+      const ci = document.getElementById('tx-checkin').value;
+      const co = document.getElementById('tx-checkout').value;
+      if (ci && co) {
+        const diffHrs = (new Date(co) - new Date(ci)) / (1000 * 60 * 60);
+        if (diffHrs > 0) {
+          document.getElementById('tx-duration').value = Math.max(0.25, +(diffHrs / 24).toFixed(2));
+        }
+      }
+    }
+
+    function syncPaidAmount() {
+      const status = document.getElementById('tx-status').value;
+      const amount = Number(document.getElementById('tx-amount').value || 0);
+      if (status === 'Lunas') document.getElementById('tx-paid').value = amount;
+      else if (status === 'Belum bayar') document.getElementById('tx-paid').value = 0;
+    }
+
+    async function saveTransaction(e) {
+      e.preventDefault();
+      const id = document.getElementById('tx-id').value;
+      const payload = {
+        user_id: currentUser.id,
+        apartment_id: apartment.id,
+        type: 'income',
+        transaction_date: document.getElementById('tx-date').value,
+        package_name: document.getElementById('tx-package').value,
+        guest_name: document.getElementById('tx-guest').value.trim(),
+        guest_whatsapp: document.getElementById('tx-wa').value.trim(),
+        check_in: new Date(document.getElementById('tx-checkin').value).toISOString(),
+        check_out: new Date(document.getElementById('tx-checkout').value).toISOString(),
+        amount: Number(document.getElementById('tx-amount').value),
+        duration_days: Number(document.getElementById('tx-duration').value),
+        payment_method: document.getElementById('tx-method').value,
+        payment_status: document.getElementById('tx-status').value,
+        paid_amount: Number(document.getElementById('tx-paid').value),
+        notes: document.getElementById('tx-notes').value.trim()
+      };
+
+      const { error } = id
+        ? await sb.from('transactions').update(payload).eq('id', id)
+        : await sb.from('transactions').insert(payload);
+
+      if (error) return alert('Gagal menyimpan: ' + error.message);
+      closeModal('tx-modal');
+      showToast('Transaksi tamu tersimpan!');
+      await syncAllData(false);
+    }
+
+    async function deleteTransaction(id) {
+      if (!confirm('Hapus transaksi ini?')) return;
+      await sb.from('transactions').delete().eq('id', id);
+      showToast('Data dihapus.');
+      await syncAllData(false);
+    }
+
+    // ================= PENGELUARAN OPERASIONAL CRUD =================
+    function renderExpensesList(list) {
+      const container = document.getElementById('exp-list');
+      if (!list.length) {
+        container.innerHTML = '<div class="card-surface rounded-2xl p-8 text-center text-xs text-slate-400">Belum ada pengeluaran operasional pada periode ini.</div>';
+        return;
+      }
+      container.innerHTML = list.map(e => `
+        <div class="card-surface rounded-2xl p-4 shadow-sm flex items-center justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">${e.expense_category}</span>
+              <span class="text-[11px] text-slate-400">${e.transaction_date} • ${e.payment_method}</span>
+            </div>
+            <p class="font-extrabold text-sm mt-1">${e.description}</p>
+            ${e.notes ? `<p class="text-[11px] text-slate-500">${e.notes}</p>` : ''}
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-sm font-extrabold text-rose-600">- ${formatRp(e.amount)}</p>
+            <div class="flex gap-1.5 justify-end mt-2">
+              <button onclick="openExpModal('${e.id}')" class="px-2 py-1 rounded bg-slate-100 text-slate-700 text-[10px] font-bold">Edit</button>
+              <button onclick="deleteTransaction('${e.id}')" class="px-2 py-1 rounded bg-rose-50 text-rose-600 text-[10px] font-bold">Hapus</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openExpModal(id = null) {
+      if (id) {
+        const e = transactions.find(x => x.id === id);
+        document.getElementById('exp-modal-title').textContent = 'Edit Pengeluaran';
+        document.getElementById('exp-id').value = e.id;
+        document.getElementById('exp-date').value = e.transaction_date;
+        document.getElementById('exp-category').value = e.expense_category;
+        document.getElementById('exp-desc').value = e.description;
+        document.getElementById('exp-amount').value = e.amount;
+        document.getElementById('exp-method').value = e.payment_method;
+        document.getElementById('exp-notes').value = e.notes || '';
+      } else {
+        document.getElementById('exp-modal-title').textContent = 'Catat Pengeluaran Operasional';
+        document.getElementById('exp-id').value = '';
+        document.getElementById('exp-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('exp-desc').value = '';
+        document.getElementById('exp-amount').value = '';
+        document.getElementById('exp-notes').value = '';
+      }
+      document.getElementById('exp-modal').classList.remove('hidden');
+    }
+
+    async function saveExpense(e) {
+      e.preventDefault();
+      const id = document.getElementById('exp-id').value;
+      const payload = {
+        user_id: currentUser.id,
+        apartment_id: apartment.id,
+        type: 'expense',
+        transaction_date: document.getElementById('exp-date').value,
+        expense_category: document.getElementById('exp-category').value,
+        description: document.getElementById('exp-desc').value.trim(),
+        amount: Number(document.getElementById('exp-amount').value),
+        paid_amount: Number(document.getElementById('exp-amount').value),
+        payment_method: document.getElementById('exp-method').value,
+        payment_status: 'Lunas',
+        notes: document.getElementById('exp-notes').value.trim()
+      };
+
+      const { error } = id
+        ? await sb.from('transactions').update(payload).eq('id', id)
+        : await sb.from('transactions').insert(payload);
+
+      if (error) return alert('Gagal menyimpan: ' + error.message);
+      closeModal('exp-modal');
+      showToast('Pengeluaran berhasil dicatat!');
+      await syncAllData(false);
+    }
+
+    // ================= KALENDER OKUPANSI =================
+    function renderCalendar(month, year, mIncomes) {
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const grid = document.getElementById('calendar-grid');
+      let html = '';
+
+      for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dayStart = new Date(year, month - 1, d, 0, 0, 0);
+        const dayEnd = new Date(year, month - 1, d, 23, 59, 59);
+        const bookings = mIncomes.filter(t => {
+          const ci = new Date(t.check_in);
+          const co = new Date(t.check_out);
+          return ci <= dayEnd && co >= dayStart;
+        });
+
+        const isBooked = bookings.length > 0;
+        html += `
+          <div class="min-h-[54px] p-1.5 rounded-xl border text-left ${isBooked ? 'bg-amber-500/20 border-amber-500' : 'bg-emerald-50/70 border-emerald-200'}">
+            <div class="text-[11px] font-extrabold ${isBooked ? 'text-amber-800' : 'text-emerald-800'}">${d}</div>
+            ${bookings.slice(0, 2).map(b => `<div class="text-[9px] font-bold truncate bg-slate-900 text-amber-300 px-1 rounded mt-0.5">${b.guest_name}</div>`).join('')}
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
+
+      const today = new Date();
+      const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+      const getByDate = (target) => transactions.filter(t => {
+        if (t.type !== 'income' || !t.check_in) return false;
+        const s = new Date(target.getFullYear(), target.getMonth(), target.getDate(), 0, 0);
+        const e = new Date(target.getFullYear(), target.getMonth(), target.getDate(), 23, 59);
+        return new Date(t.check_in) <= e && new Date(t.check_out) >= s;
+      });
+
+      const todayGuests = getByDate(today);
+      const tmrGuests = getByDate(tomorrow);
+
+      document.getElementById('cal-today-list').innerHTML = todayGuests.length
+        ? todayGuests.map(g => `<div class="p-2 rounded-xl bg-amber-50 border border-amber-200 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
+        : '<p class="text-slate-400">Kamar kosong hari ini.</p>';
+
+      document.getElementById('cal-tomorrow-list').innerHTML = tmrGuests.length
+        ? tmrGuests.map(g => `<div class="p-2 rounded-xl bg-cream border border-slate-200 font-bold">${g.guest_name} (${g.package_name})</div>`).join('')
+        : '<p class="text-slate-400">Belum ada jadwal tamu besok.</p>';
+    }
+
+    // ================= SALADIN MANSION & PEMBAYARAN SEWA =================
+    function renderApartmentTab(m, countdownText) {
+      document.getElementById('apt-name-display').textContent = apartment?.name || 'Saladin Mansion';
+      document.getElementById('apt-due-display').textContent = apartment?.due_day || 17;
+      document.getElementById('apt-rent-display').textContent = formatRp(apartment?.monthly_rent || 3000000);
+      document.getElementById('apt-deposit-display').textContent = formatRp(apartment?.deposit || 0);
+      document.getElementById('apt-countdown-display').textContent = countdownText;
+      document.getElementById('apt-profit-display').textContent = formatRp(m.netProfit);
+
+      const histEl = document.getElementById('rent-history-list');
+      if (!rentPayments.length) {
+        histEl.innerHTML = '<p class="text-xs text-slate-400 py-3">Belum ada riwayat pembayaran sewa bulanan.</p>';
+        return;
+      }
+      histEl.innerHTML = rentPayments.map(r => `
+        <div class="p-3 rounded-xl bg-cream border border-slate-200 flex items-center justify-between text-xs">
+          <div>
+            <p class="font-extrabold">${MONTHS[r.period_month - 1]} ${r.period_year}</p>
+            <p class="text-[11px] text-slate-500">Tgl Bayar: ${r.payment_date || '-'} • ${r.payment_method}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-extrabold">${formatRp(r.amount)}</p>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${r.status === 'Sudah dibayar' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${r.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openRentPayModal() {
+      document.getElementById('rent-month').value = document.getElementById('filter-month').value;
+      document.getElementById('rent-year').value = document.getElementById('filter-year').value;
+      document.getElementById('rent-amount').value = apartment?.monthly_rent || 3000000;
+      document.getElementById('rent-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('rent-modal').classList.remove('hidden');
+    }
+
+    async function saveRentPayment(e) {
+      e.preventDefault();
+      const month = Number(document.getElementById('rent-month').value);
+      const year = Number(document.getElementById('rent-year').value);
+      const existing = rentPayments.find(r => r.period_month === month && r.period_year === year);
+
+      const payload = {
+        user_id: currentUser.id,
+        apartment_id: apartment.id,
+        period_month: month,
+        period_year: year,
+        amount: Number(document.getElementById('rent-amount').value),
+        payment_date: document.getElementById('rent-date').value,
+        status: document.getElementById('rent-status').value,
+        payment_method: document.getElementById('rent-method').value,
+        notes: document.getElementById('rent-notes').value.trim()
+      };
+
+      const { error } = existing
+        ? await sb.from('rent_payments').update(payload).eq('id', existing.id)
+        : await sb.from('rent_payments').insert(payload);
+
+      if (error) return alert('Gagal menyimpan: ' + error.message);
+      closeModal('rent-modal');
+      showToast('Status sewa bulanan diperbarui!');
+      await syncAllData(false);
+    }
+
+    // ================= LAPORAN, GRAFIK, WHATSAPP & EKSPOR =================
+    function renderReportsComparison(month, year, cur) {
+      const prevM = month === 1 ? 12 : month - 1;
+      const prevY = month === 1 ? year - 1 : year;
+      const prev = getMonthMetrics(prevM, prevY);
+
+      const rows = [
+        { label: 'Total Omzet', p: prev.omzet, c: cur.omzet },
+        { label: 'Pengeluaran Operasional', p: prev.opsExpense, c: cur.opsExpense },
+        { label: 'Modal Sewa Bulanan', p: prev.monthlyCapital, c: cur.monthlyCapital },
+        { label: 'Laba Bersih', p: prev.netProfit, c: cur.netProfit }
+      ];
+
+      document.getElementById('report-comparison-body').innerHTML = rows.map(r => {
+        const diff = r.c - r.p;
+        return `
+          <tr>
+            <td class="py-2.5">${r.label}</td>
+            <td class="py-2.5 text-slate-500">${formatRp(r.p)}</td>
+            <td class="py-2.5 font-extrabold">${formatRp(r.c)}</td>
+            <td class="py-2.5 ${diff >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${diff >= 0 ? '+' : ''}${formatRp(diff)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('financeChart');
+      if (!ctx) return;
+      const labels = [], omzetData = [], expData = [], profitData = [];
+      const curM = Number(document.getElementById('filter-month').value);
+      const curY = Number(document.getElementById('filter-year').value);
+
+      for (let i = 5; i >= 0; i--) {
+        let m = curM - i, y = curY;
+        while (m <= 0) { m += 12; y -= 1; }
+        const stats = getMonthMetrics(m, y);
+        labels.push(`${MONTHS[m - 1].slice(0, 3)} ${y}`);
+        omzetData.push(stats.omzet);
+        expData.push(stats.opsExpense + stats.monthlyCapital);
+        profitData.push(stats.netProfit);
+      }
+
+      if (financeChartInstance) financeChartInstance.destroy();
+      financeChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Omzet', data: omzetData, backgroundColor: '#10B981', borderRadius: 6 },
+            { label: 'Modal + Ops', data: expData, backgroundColor: '#F43F5E', borderRadius: 6 },
+            { label: 'Laba Bersih', data: profitData, backgroundColor: '#F59E0B', borderRadius: 6 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function shareReportWhatsApp() {
+      const month = Number(document.getElementById('filter-month').value);
+      const year = Number(document.getElementById('filter-year').value);
+      const m = getMonthMetrics(month, year);
+      const cash = getCumulativeCashBalance(month, year);
+
+      const text = `*LAPORAN KEUANGAN APARTEMENKU*\n` +
+        `Unit: *Saladin Mansion*\n` +
+        `Periode: *${MONTHS[month - 1]} ${year}*\n\n` +
+        `• Omzet Sewa (${m.txCount} transaksi): *${formatRp(m.omzet)}*\n` +
+        `• Modal Sewa Bulanan: *${formatRp(m.monthlyCapital)}* (${m.isRentPaid ? 'Lunas' : 'Belum bayar'})\n` +
+        `• Pengeluaran Operasional: *${formatRp(m.opsExpense)}*\n` +
+        `• Laba Bersih: *${formatRp(m.netProfit)}*\n` +
+        `• Saldo Kas Aktual: *${formatRp(cash)}*\n` +
+        `• Tingkat Okupansi: *${m.occupancyPct}%*`;
+
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function exportCSV() {
+      let csv = 'Tanggal,Tipe,Tamu/Keterangan,Paket/Kategori,Nominal,Diterima,Metode,Status\n';
+      transactions.forEach(t => {
+        csv += `"${t.transaction_date}","${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}","${t.guest_name || t.description || ''}","${t.package_name || t.expense_category || ''}",${t.amount},${t.paid_amount},"${t.payment_method}","${t.payment_status}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Laporan_ApartemenKu_SaladinMansion_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    // ================= PENGATURAN & PAKET =================
+    function renderSettingsTab() {
+      if (apartment) {
+        document.getElementById('set-apt-name').value = apartment.name;
+        document.getElementById('set-apt-rent').value = apartment.monthly_rent;
+        document.getElementById('set-apt-deposit').value = apartment.deposit;
+        document.getElementById('set-apt-due').value = apartment.due_day;
+      }
+      if (settings) {
+        document.getElementById('set-rem-days').value = settings.reminder_days_before;
+        document.getElementById('set-rem-time').value = settings.reminder_time;
+        document.getElementById('set-initial-cash').value = settings.initial_cash_balance;
+        document.getElementById('set-theme').value = settings.theme;
+        document.getElementById('set-font').value = settings.font_size;
+      }
+
+      document.getElementById('settings-pkg-list').innerHTML = packages.map(p => `
+        <div class="py-2.5 flex items-center justify-between">
+          <div>
+            <p class="font-extrabold">${p.name}</p>
+            <p class="text-[11px] text-slate-500">${formatRp(p.price)} • ${p.duration_hours} Jam</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openPkgModal('${p.id}')" class="px-2.5 py-1 rounded bg-slate-100 font-bold">Edit</button>
+            <button onclick="deletePackage('${p.id}')" class="px-2.5 py-1 rounded bg-rose-50 text-rose-600 font-bold">Hapus</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function saveApartmentAndSettings(e) {
+      e.preventDefault();
+      await sb.from('apartments').update({
+        name: document.getElementById('set-apt-name').value.trim(),
+        monthly_rent: Number(document.getElementById('set-apt-rent').value),
+        deposit: Number(document.getElementById('set-apt-deposit').value),
+        due_day: Number(document.getElementById('set-apt-due').value)
+      }).eq('id', apartment.id);
+
+      await sb.from('app_settings').update({
+        reminder_days_before: Number(document.getElementById('set-rem-days').value),
+        reminder_time: document.getElementById('set-rem-time').value,
+        initial_cash_balance: Number(document.getElementById('set-initial-cash').value),
+        theme: document.getElementById('set-theme').value,
+        font_size: document.getElementById('set-font').value
+      }).eq('user_id', currentUser.id);
+
+      showToast('Pengaturan berhasil disimpan!');
+      await syncAllData(false);
+    }
+
+    function openPkgModal(id = null) {
+      if (id) {
+        const p = packages.find(x => x.id === id);
+        document.getElementById('pkg-id').value = p.id;
+        document.getElementById('pkg-name').value = p.name;
+        document.getElementById('pkg-price').value = p.price;
+        document.getElementById('pkg-hours').value = p.duration_hours;
+      } else {
+        document.getElementById('pkg-id').value = '';
+        document.getElementById('pkg-name').value = '';
+        document.getElementById('pkg-price').value = '';
+        document.getElementById('pkg-hours').value = 3;
+      }
+      document.getElementById('pkg-modal').classList.remove('hidden');
+    }
+
+    async function savePackage(e) {
+      e.preventDefault();
+      const id = document.getElementById('pkg-id').value;
+      const payload = {
+        user_id: currentUser.id,
+        name: document.getElementById('pkg-name').value.trim(),
+        price: Number(document.getElementById('pkg-price').value),
+        duration_hours: Number(document.getElementById('pkg-hours').value)
+      };
+      if (id) await sb.from('pricing_packages').update(payload).eq('id', id);
+      else await sb.from('pricing_packages').insert(payload);
+
+      closeModal('pkg-modal');
+      showToast('Paket harga disimpan!');
+      await syncAllData(false);
+    }
+
+    async function deletePackage(id) {
+      if (!confirm('Hapus paket ini?')) return;
+      await sb.from('pricing_packages').delete().eq('id', id);
+      showToast('Paket dihapus.');
+      await syncAllData(false);
+    }
+
+    function downloadBackupJSON() {
+      const backup = { exported_at: new Date().toISOString(), apartment, packages, transactions, rentPayments, settings };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Backup_ApartemenKu_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
