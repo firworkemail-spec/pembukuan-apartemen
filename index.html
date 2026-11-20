@@ -91,7 +91,7 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="font-extrabold text-base tracking-tight">ApartemenKu</h1>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">Saladin Mansion</span>
+              <select id="header-apt-selector" onchange="onSwitchApartment(this.value)" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 focus:outline-none"></select>
             </div>
             <p id="header-user-email" class="text-[11px] text-slate-400 truncate max-w-[180px] sm:max-w-xs"></p>
           </div>
@@ -113,9 +113,9 @@
           <button onclick="navigate('transactions')" data-nav="transactions" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Transaksi Tamu</button>
           <button onclick="navigate('expenses')" data-nav="expenses" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Pengeluaran</button>
           <button onclick="navigate('calendar')" data-nav="calendar" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Kalender</button>
-          <button onclick="navigate('apartment')" data-nav="apartment" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Saladin Mansion</button>
+          <button onclick="navigate('apartment')" data-nav="apartment" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Unit & Sewa</button>
           <button onclick="navigate('reports')" data-nav="reports" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Laporan</button>
-          <button onclick="navigate('settings')" data-nav="settings" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Pengaturan</button>
+          <button onclick="navigate('settings')" data-nav="settings" class="nav-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-300 hover:text-white">Pengaturan & Pricelist</button>
         </div>
       </nav>
     </header>
@@ -151,7 +151,6 @@
 
       <!-- ==================== TAB 1: DASHBOARD ==================== -->
       <section id="view-dashboard" class="view-section space-y-5">
-        <!-- 3 PILAR KEUANGAN UTAMA (TIDAK DICAMPUR) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="card-surface rounded-2xl p-4 shadow-sm border-l-4 border-l-emerald-500">
             <div class="flex justify-between items-start">
@@ -181,7 +180,6 @@
           </div>
         </div>
 
-        <!-- METRIK OPERASIONAL & SEWA -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="card-surface rounded-2xl p-3.5">
             <p class="text-[11px] font-bold text-slate-500 text-muted">Modal Sewa Bulanan</p>
@@ -205,7 +203,6 @@
           </div>
         </div>
 
-        <!-- ARUS KAS & TAMU HARI INI/BESOK -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="card-surface rounded-2xl p-4 space-y-3">
             <h2 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="arrow-left-right" class="w-4 h-4 text-amber-500"></i> Ringkasan Arus Kas Bulan Ini</h2>
@@ -250,14 +247,13 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-lg font-extrabold">Transaksi Penyewaan Tamu</h2>
-            <p class="text-xs text-slate-500 text-muted">Saladin Mansion • Perhitungan otomatis modal prorata & estimasi profit per transaksi</p>
+            <p class="text-xs text-slate-500 text-muted">Perhitungan otomatis modal prorata & estimasi profit per transaksi</p>
           </div>
           <button onclick="openTxModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xs flex items-center gap-1.5 shadow">
             <i data-lucide="plus" class="w-4 h-4"></i> Tambah Transaksi
           </button>
         </div>
 
-        <!-- FILTER STATUS -->
         <div class="flex gap-2 overflow-x-auto no-scrollbar">
           <button onclick="setTxFilter('ALL')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold" data-status="ALL">Semua</button>
           <button onclick="setTxFilter('Lunas')" class="tx-filter-btn px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold" data-status="Lunas">Lunas</button>
@@ -288,7 +284,7 @@
         <div class="card-surface rounded-2xl p-4">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>
-              <h2 class="text-base font-extrabold">Kalender Okupansi Saladin Mansion</h2>
+              <h2 class="text-base font-extrabold">Kalender Okupansi Unit</h2>
               <p class="text-xs text-slate-500 text-muted">Pantau tanggal terisi dan kosong secara visual</p>
             </div>
             <div class="flex items-center gap-3 text-xs font-bold">
@@ -314,18 +310,23 @@
         </div>
       </section>
 
-      <!-- ==================== TAB 5: PENGELOLAAN SALADIN MANSION ==================== -->
+      <!-- ==================== TAB 5: PENGELOLAAN APARTEMEN ==================== -->
       <section id="view-apartment" class="view-section hidden space-y-4">
         <div class="card-surface rounded-2xl p-5 space-y-4 border-t-4 border-t-amber-500">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">Unit Aktif Tunggal</span>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">Unit Terpilih</span>
               <h2 id="apt-name-display" class="text-xl font-extrabold mt-2">Saladin Mansion</h2>
-              <p class="text-xs text-slate-500 text-muted">Jl. Raya Babakan Madang / Margonda • Jatuh tempo setiap tanggal <span id="apt-due-display" class="font-bold">17</span></p>
+              <p class="text-xs text-slate-500 text-muted">Jatuh tempo setiap tanggal <span id="apt-due-display" class="font-bold">17</span></p>
             </div>
-            <button onclick="openRentPayModal()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-extrabold shadow flex items-center gap-1.5">
-              <i data-lucide="check-circle-2" class="w-4 h-4"></i> Catat Bayar Sewa Bulan Ini
-            </button>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="openAptModal()" class="px-3.5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-4 h-4"></i> + Unit Baru
+              </button>
+              <button onclick="openRentPayModal()" class="px-4 py-2.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-extrabold shadow flex items-center gap-1.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Catat Bayar Sewa
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
@@ -371,7 +372,6 @@
           </div>
         </div>
 
-        <!-- PERBANDINGAN BULAN INI VS BULAN LALU -->
         <div class="card-surface rounded-2xl p-4 overflow-x-auto">
           <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Perbandingan Bulan Berjalan vs Bulan Sebelumnya</h3>
           <table class="w-full text-xs text-left">
@@ -387,7 +387,6 @@
           </table>
         </div>
 
-        <!-- GRAFIK -->
         <div class="card-surface rounded-2xl p-4">
           <h3 class="text-xs font-extrabold uppercase text-slate-500 mb-3">Grafik Pemasukan, Pengeluaran & Keuntungan (6 Bulan Terakhir)</h3>
           <div class="h-64">
@@ -396,14 +395,61 @@
         </div>
       </section>
 
-      <!-- ==================== TAB 7: PENGATURAN ==================== -->
+      <!-- ==================== TAB 7: PENGATURAN & PRICELIST ==================== -->
       <section id="view-settings" class="view-section hidden space-y-4">
-        <!-- PENGATURAN APARTEMEN & MODAL -->
-        <div class="card-surface rounded-2xl p-4 space-y-3">
-          <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Data Saladin Mansion & Pengingat</h3>
-          <form onsubmit="saveApartmentAndSettings(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        
+        <!-- PENGATURAN PRICELIST & PAKET HEMAT -->
+        <div class="card-surface rounded-2xl p-4 space-y-3 border-t-4 border-t-amber-500">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <label class="block font-bold mb-1">Nama Apartemen</label>
+              <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-amber-500"></i> Pengaturan Price List & Paket Hemat</h3>
+              <p class="text-[11px] text-slate-500 text-muted">Edit harga sewa, tambah paket baru, atau bagikan daftar harga ke tamu</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="sharePricelistWhatsApp()" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1">
+                <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share WA
+              </button>
+              <button onclick="resetDefaultPackages()" class="px-3 py-1.5 rounded-xl bg-slate-200 text-slate-800 text-xs font-bold">
+                Reset Default
+              </button>
+              <button onclick="openPkgModal()" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold">
+                + Tambah Paket
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="p-3 rounded-2xl bg-cream border border-slate-200">
+              <h4 class="text-xs font-extrabold uppercase text-slate-700 mb-2 flex items-center justify-between">
+                <span>PRICE LIST (REGULER)</span>
+                <span class="text-[10px] text-amber-600">Klik Edit untuk ubah</span>
+              </h4>
+              <div id="settings-pricelist-regular" class="divide-y divide-slate-200 text-xs"></div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200">
+              <h4 class="text-xs font-extrabold uppercase text-amber-800 mb-2 flex items-center justify-between">
+                <span>PAKET HEMAT</span>
+                <span class="text-[10px] text-amber-700">Klik Edit untuk ubah</span>
+              </h4>
+              <div id="settings-pricelist-hemat" class="divide-y divide-amber-200/70 text-xs"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PENGATURAN UNIT APARTEMEN & PENGINGAT -->
+        <div class="card-surface rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Pengaturan Unit Apartemen & Modal</h3>
+            <button onclick="openAptModal()" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold">+ Tambah Unit Apartemen</button>
+          </div>
+
+          <!-- DAFTAR UNIT APARTEMEN -->
+          <div id="settings-apt-list" class="space-y-2 pb-2"></div>
+
+          <form onsubmit="saveApartmentAndSettings(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+            <div>
+              <label class="block font-bold mb-1">Nama Unit Aktif</label>
               <input type="text" id="set-apt-name" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
             </div>
             <div>
@@ -449,22 +495,11 @@
           </form>
         </div>
 
-        <!-- PENGATURAN PAKET HARGA -->
+        <!-- BACKUP JSON -->
         <div class="card-surface rounded-2xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-amber-500"></i> Daftar Paket Harga Sewa</h3>
-            <button onclick="openPkgModal()" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold">+ Paket Baru</button>
-          </div>
-          <div id="settings-pkg-list" class="divide-y divide-slate-100 text-xs"></div>
-        </div>
-
-        <!-- BACKUP & RESTORE JSON -->
-        <div class="card-surface rounded-2xl p-4 space-y-3">
-          <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="database-backup" class="w-4 h-4 text-amber-500"></i> Backup & Restore Data</h3>
+          <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="database-backup" class="w-4 h-4 text-amber-500"></i> Backup Data</h3>
           <p class="text-xs text-slate-500 text-muted">Unduh salinan penuh database Anda dalam format JSON untuk cadangan offline.</p>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="downloadBackupJSON()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">Download Backup (.JSON)</button>
-          </div>
+          <button onclick="downloadBackupJSON()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold">Download Backup (.JSON)</button>
         </div>
       </section>
     </main>
@@ -496,14 +531,14 @@
         <span class="font-extrabold text-sm">Menu Lainnya</span>
         <button onclick="closeModal('more-menu-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
+      <button onclick="navigate('settings'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 font-extrabold text-xs flex items-center gap-3 text-amber-900">
+        <i data-lucide="tags" class="w-4 h-4 text-amber-600"></i> Edit Pricelist, Paket Hemat & Pengaturan
+      </button>
       <button onclick="navigate('apartment'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
-        <i data-lucide="building-2" class="w-4 h-4 text-amber-600"></i> Kelola Saladin Mansion & Sewa Bulanan
+        <i data-lucide="building-2" class="w-4 h-4 text-amber-600"></i> Kelola Unit Apartemen & Bayar Sewa
       </button>
       <button onclick="navigate('reports'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
         <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-600"></i> Laporan Keuangan & Grafik
-      </button>
-      <button onclick="navigate('settings'); closeModal('more-menu-modal')" class="w-full text-left px-4 py-3 rounded-xl bg-cream font-bold text-xs flex items-center gap-3">
-        <i data-lucide="settings" class="w-4 h-4 text-amber-600"></i> Pengaturan Paket, Modal & Backup
       </button>
     </div>
   </div>
@@ -523,7 +558,7 @@
             <input type="date" id="tx-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
           </div>
           <div>
-            <label class="block font-bold mb-1">Paket Penyewaan</label>
+            <label class="block font-bold mb-1">Pilih Paket / Price List</label>
             <select id="tx-package" onchange="onPackageSelect()" class="w-full px-3 py-2.5 rounded-xl border border-slate-300"></select>
           </div>
         </div>
@@ -554,7 +589,7 @@
           </div>
           <div>
             <label class="block font-bold mb-1">Durasi Hitung Modal (Hari)</label>
-            <input type="number" step="0.1" id="tx-duration" required value="1" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            <input type="number" step="0.01" id="tx-duration" required value="1" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-2">
@@ -650,7 +685,7 @@
   <div id="rent-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white text-slate-900 rounded-3xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-extrabold text-base">Pembayaran Sewa Saladin Mansion</h3>
+        <h3 class="font-extrabold text-base">Pembayaran Sewa ke Pemilik</h3>
         <button onclick="closeModal('rent-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form onsubmit="saveRentPayment(event)" class="space-y-3 text-xs">
@@ -702,7 +737,7 @@
     </div>
   </div>
 
-  <!-- MODAL PAKET HARGA -->
+  <!-- MODAL PAKET HARGA / PRICELIST -->
   <div id="pkg-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -712,20 +747,59 @@
       <form onsubmit="savePackage(event)" class="space-y-3 text-xs">
         <input type="hidden" id="pkg-id" />
         <div>
-          <label class="block font-bold mb-1">Nama Paket</label>
-          <input type="text" id="pkg-name" required placeholder="Contoh: 3 Jam / Weekend" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <label class="block font-bold mb-1">Kategori</label>
+          <select id="pkg-category" class="w-full px-3 py-2.5 rounded-xl border border-slate-300">
+            <option value="Price List">Price List (Reguler)</option>
+            <option value="Paket Hemat">Paket Hemat</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Nama Paket / Durasi</label>
+          <input type="text" id="pkg-name" required placeholder="Contoh: 2 Jam / Morning (06.00-12.00)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div>
           <label class="block font-bold mb-1">Harga Sewa (Rp)</label>
-          <input type="number" id="pkg-price" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          <input type="number" id="pkg-price" required placeholder="Contoh: 60000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
         </div>
         <div>
           <label class="block font-bold mb-1">Durasi Paket (Jam)</label>
-          <input type="number" id="pkg-hours" required value="3" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <input type="number" id="pkg-hours" required value="2" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div class="pt-2 flex gap-2">
           <button type="button" onclick="closeModal('pkg-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
           <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-900 font-extrabold">Simpan Paket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH UNIT APARTEMEN -->
+  <div id="apt-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-extrabold text-base">Tambah Unit Apartemen Baru</h3>
+        <button onclick="closeModal('apt-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="createApartment(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">Nama Apartemen / Unit</label>
+          <input type="text" id="new-apt-name" required placeholder="Contoh: Saladin Mansion Unit B" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Modal Sewa Bulanan (Rp)</label>
+          <input type="number" id="new-apt-rent" required value="3000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Deposit (Rp)</label>
+          <input type="number" id="new-apt-deposit" required value="0" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Tanggal Jatuh Tempo (1-31)</label>
+          <input type="number" id="new-apt-due" min="1" max="31" required value="17" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('apt-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-900 font-extrabold">Simpan Unit</button>
         </div>
       </form>
     </div>
@@ -737,9 +811,24 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_K2dXUYg2Dm4qoaBW9KW9Jw_bV_ga6ZU';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // ================= DEFAULT PRICELIST & PAKET HEMAT =================
+    const DEFAULT_PACKAGES = [
+      { name: 'Price List: 2 Jam', price: 60000, duration_hours: 2 },
+      { name: 'Price List: 3 Jam', price: 70000, duration_hours: 3 },
+      { name: 'Price List: 4 Jam', price: 85000, duration_hours: 4 },
+      { name: 'Price List: 7 Jam', price: 150000, duration_hours: 7 },
+      { name: 'Price List: 12 Jam', price: 200000, duration_hours: 12 },
+      { name: 'Price List: Fullday', price: 250000, duration_hours: 24 },
+      { name: 'Paket Hemat: Morning (06.00-12.00)', price: 125000, duration_hours: 6 },
+      { name: 'Paket Hemat: Malam (21.00-09.00)', price: 225000, duration_hours: 12 },
+      { name: 'Paket Hemat: 1 Minggu (7x24 Jam)', price: 950000, duration_hours: 168 }
+    ];
+
     // ================= STATE APLIKASI =================
     let currentUser = null;
     let authMode = 'login';
+    let apartments = [];
+    let activeAptId = null;
     let apartment = null;
     let packages = [];
     let transactions = [];
@@ -864,19 +953,28 @@
     async function syncAllData(notify = true) {
       try {
         const [aptRes, pkgRes, txRes, rentRes, setRes] = await Promise.all([
-          sb.from('apartments').select('*').limit(1).single(),
-          sb.from('pricing_packages').select('*').order('price', { ascending: true }),
+          sb.from('apartments').select('*').order('created_at', { ascending: true }),
+          sb.from('pricing_packages').select('*').order('duration_hours', { ascending: true }),
           sb.from('transactions').select('*').order('transaction_date', { ascending: false }),
           sb.from('rent_payments').select('*').order('period_year', { ascending: false }),
           sb.from('app_settings').select('*').limit(1).single()
         ]);
 
-        apartment = aptRes.data || { name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 };
+        apartments = aptRes.data || [];
+        if (!apartments.length) {
+          apartments = [{ id: null, name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 }];
+        }
+        if (!activeAptId || !apartments.find(a => a.id === activeAptId)) {
+          activeAptId = apartments[0].id;
+        }
+        apartment = apartments.find(a => a.id === activeAptId) || apartments[0];
+
         packages = pkgRes.data || [];
         transactions = txRes.data || [];
         rentPayments = rentRes.data || [];
         settings = setRes.data || { reminder_days_before: 7, reminder_time: '09:00', initial_cash_balance: 0, theme: 'slate-amber', font_size: 'normal' };
 
+        renderApartmentSelector();
         applyAppearance();
         refreshUI();
         if (notify) showToast('Data tersinkronisasi!');
@@ -884,6 +982,17 @@
         console.error(err);
         showToast('Gagal memuat sebagian data.');
       }
+    }
+
+    function renderApartmentSelector() {
+      const sel = document.getElementById('header-apt-selector');
+      sel.innerHTML = apartments.map(a => `<option value="${a.id}" ${a.id === activeAptId ? 'selected' : ''} class="text-slate-900 bg-white">${a.name}</option>`).join('');
+    }
+
+    function onSwitchApartment(aptId) {
+      activeAptId = aptId;
+      apartment = apartments.find(a => a.id === activeAptId) || apartments[0];
+      refreshUI();
     }
 
     function applyAppearance() {
@@ -911,18 +1020,29 @@
     }
 
     // ================= PERHITUNGAN & RENDER UI =================
+    function getAptTransactions() {
+      return transactions.filter(t => !activeAptId || t.apartment_id === activeAptId);
+    }
+
+    function getAptRentPayments() {
+      return rentPayments.filter(r => !activeAptId || r.apartment_id === activeAptId);
+    }
+
     function getMonthMetrics(month, year) {
-      const mIncomes = transactions.filter(t => {
+      const aptTx = getAptTransactions();
+      const aptRent = getAptRentPayments();
+
+      const mIncomes = aptTx.filter(t => {
         if (t.type !== 'income') return false;
         const d = new Date(t.transaction_date);
         return (d.getMonth() + 1) === month && d.getFullYear() === year;
       });
-      const mExpenses = transactions.filter(t => {
+      const mExpenses = aptTx.filter(t => {
         if (t.type !== 'expense') return false;
         const d = new Date(t.transaction_date);
         return (d.getMonth() + 1) === month && d.getFullYear() === year;
       });
-      const rentRecord = rentPayments.find(r => r.period_month === month && r.period_year === year);
+      const rentRecord = aptRent.find(r => r.period_month === month && r.period_year === year);
 
       const omzet = mIncomes.reduce((sum, t) => sum + Number(t.amount || 0), 0);
       const actualCashIn = mIncomes.reduce((sum, t) => {
@@ -952,7 +1072,7 @@
 
     function getCumulativeCashBalance(targetMonth, targetYear) {
       let cash = Number(settings?.initial_cash_balance || 0);
-      transactions.forEach(t => {
+      getAptTransactions().forEach(t => {
         const d = new Date(t.transaction_date);
         const y = d.getFullYear();
         const m = d.getMonth() + 1;
@@ -964,7 +1084,7 @@
           }
         }
       });
-      rentPayments.forEach(r => {
+      getAptRentPayments().forEach(r => {
         if (r.status === 'Sudah dibayar') {
           if (r.period_year < targetYear || (r.period_year === targetYear && r.period_month <= targetMonth)) {
             cash -= Number(r.amount || 0);
@@ -1015,7 +1135,7 @@
       const banner = document.getElementById('reminder-banner');
       if (!m.isRentPaid && diffDays <= remDays) {
         banner.classList.remove('hidden');
-        document.getElementById('reminder-title').textContent = `Pengingat Sewa Saladin Mansion (${countdownText})`;
+        document.getElementById('reminder-title').textContent = `Pengingat Sewa ${apartment?.name || 'Saladin Mansion'} (${countdownText})`;
         document.getElementById('reminder-desc').textContent = `Tagihan sewa ${formatRp(m.monthlyCapital)} jatuh tempo tanggal ${dueDay}. Pengingat aktif pukul ${settings?.reminder_time || '09:00'} WIB.`;
       } else {
         banner.classList.add('hidden');
@@ -1040,7 +1160,7 @@
 
     function renderUpcomingGuests() {
       const now = new Date();
-      const upcoming = transactions
+      const upcoming = getAptTransactions()
         .filter(t => t.type === 'income' && t.check_out && new Date(t.check_out) >= now)
         .sort((a, b) => new Date(a.check_in) - new Date(b.check_in))
         .slice(0, 4);
@@ -1120,8 +1240,18 @@
 
     function openTxModal(id = null) {
       const pkgSel = document.getElementById('tx-package');
-      pkgSel.innerHTML = packages.map(p => `<option value="${p.name}" data-price="${p.price}" data-hours="${p.duration_hours}">${p.name} (${formatRp(p.price)})</option>`).join('') +
-        `<option value="Custom" data-price="0" data-hours="24">Custom (Atur Manual)</option>`;
+      const regularPkgs = packages.filter(p => !p.name.startsWith('Paket Hemat:'));
+      const hematPkgs = packages.filter(p => p.name.startsWith('Paket Hemat:'));
+
+      let optHtml = '';
+      if (regularPkgs.length) {
+        optHtml += `<optgroup label="PRICE LIST">` + regularPkgs.map(p => `<option value="${p.name}" data-price="${p.price}" data-hours="${p.duration_hours}">${p.name.replace('Price List: ', '')} — ${formatRp(p.price)}</option>`).join('') + `</optgroup>`;
+      }
+      if (hematPkgs.length) {
+        optHtml += `<optgroup label="PAKET HEMAT">` + hematPkgs.map(p => `<option value="${p.name}" data-price="${p.price}" data-hours="${p.duration_hours}">${p.name.replace('Paket Hemat: ', '')} — ${formatRp(p.price)}</option>`).join('') + `</optgroup>`;
+      }
+      optHtml += `<optgroup label="LAINNYA"><option value="Custom" data-price="0" data-hours="24">Custom (Atur Harga Manual)</option></optgroup>`;
+      pkgSel.innerHTML = optHtml;
 
       if (id) {
         const t = transactions.find(x => x.id === id);
@@ -1162,7 +1292,7 @@
       const price = Number(opt.dataset.price || 0);
       const hours = Number(opt.dataset.hours || 24);
       if (price > 0) document.getElementById('tx-amount').value = price;
-      document.getElementById('tx-duration').value = Math.max(0.25, +(hours / 24).toFixed(2));
+      document.getElementById('tx-duration').value = Math.max(0.08, +(hours / 24).toFixed(2));
 
       const ci = document.getElementById('tx-checkin').value;
       if (ci) {
@@ -1180,7 +1310,7 @@
       if (ci && co) {
         const diffHrs = (new Date(co) - new Date(ci)) / (1000 * 60 * 60);
         if (diffHrs > 0) {
-          document.getElementById('tx-duration').value = Math.max(0.25, +(diffHrs / 24).toFixed(2));
+          document.getElementById('tx-duration').value = Math.max(0.08, +(diffHrs / 24).toFixed(2));
         }
       }
     }
@@ -1224,7 +1354,7 @@
     }
 
     async function deleteTransaction(id) {
-      if (!confirm('Hapus transaksi ini?')) return;
+      if (!confirm('Hapus data ini?')) return;
       await sb.from('transactions').delete().eq('id', id);
       showToast('Data dihapus.');
       await syncAllData(false);
@@ -1337,7 +1467,7 @@
 
       const today = new Date();
       const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-      const getByDate = (target) => transactions.filter(t => {
+      const getByDate = (target) => getAptTransactions().filter(t => {
         if (t.type !== 'income' || !t.check_in) return false;
         const s = new Date(target.getFullYear(), target.getMonth(), target.getDate(), 0, 0);
         const e = new Date(target.getFullYear(), target.getMonth(), target.getDate(), 23, 59);
@@ -1356,7 +1486,7 @@
         : '<p class="text-slate-400">Belum ada jadwal tamu besok.</p>';
     }
 
-    // ================= SALADIN MANSION & PEMBAYARAN SEWA =================
+    // ================= PENGELOLAAN APARTEMEN & SEWA =================
     function renderApartmentTab(m, countdownText) {
       document.getElementById('apt-name-display').textContent = apartment?.name || 'Saladin Mansion';
       document.getElementById('apt-due-display').textContent = apartment?.due_day || 17;
@@ -1366,11 +1496,12 @@
       document.getElementById('apt-profit-display').textContent = formatRp(m.netProfit);
 
       const histEl = document.getElementById('rent-history-list');
-      if (!rentPayments.length) {
+      const aptRentList = getAptRentPayments();
+      if (!aptRentList.length) {
         histEl.innerHTML = '<p class="text-xs text-slate-400 py-3">Belum ada riwayat pembayaran sewa bulanan.</p>';
         return;
       }
-      histEl.innerHTML = rentPayments.map(r => `
+      histEl.innerHTML = aptRentList.map(r => `
         <div class="p-3 rounded-xl bg-cream border border-slate-200 flex items-center justify-between text-xs">
           <div>
             <p class="font-extrabold">${MONTHS[r.period_month - 1]} ${r.period_year}</p>
@@ -1382,6 +1513,40 @@
           </div>
         </div>
       `).join('');
+    }
+
+    function openAptModal() {
+      document.getElementById('new-apt-name').value = '';
+      document.getElementById('new-apt-rent').value = 3000000;
+      document.getElementById('new-apt-deposit').value = 0;
+      document.getElementById('new-apt-due').value = 17;
+      document.getElementById('apt-modal').classList.remove('hidden');
+    }
+
+    async function createApartment(e) {
+      e.preventDefault();
+      const { data, error } = await sb.from('apartments').insert({
+        user_id: currentUser.id,
+        name: document.getElementById('new-apt-name').value.trim(),
+        monthly_rent: Number(document.getElementById('new-apt-rent').value),
+        deposit: Number(document.getElementById('new-apt-deposit').value),
+        due_day: Number(document.getElementById('new-apt-due').value)
+      }).select().single();
+
+      if (error) return alert('Gagal menambah unit: ' + error.message);
+      activeAptId = data.id;
+      closeModal('apt-modal');
+      showToast('Unit apartemen baru ditambahkan!');
+      await syncAllData(false);
+    }
+
+    async function deleteApartment(id) {
+      if (apartments.length <= 1) return alert('Minimal harus ada 1 unit apartemen aktif.');
+      if (!confirm('Hapus unit apartemen ini beserta seluruh transaksinya?')) return;
+      await sb.from('apartments').delete().eq('id', id);
+      activeAptId = null;
+      showToast('Unit apartemen dihapus.');
+      await syncAllData(false);
     }
 
     function openRentPayModal() {
@@ -1396,7 +1561,7 @@
       e.preventDefault();
       const month = Number(document.getElementById('rent-month').value);
       const year = Number(document.getElementById('rent-year').value);
-      const existing = rentPayments.find(r => r.period_month === month && r.period_year === year);
+      const existing = getAptRentPayments().find(r => r.period_month === month && r.period_year === year);
 
       const payload = {
         user_id: currentUser.id,
@@ -1485,7 +1650,7 @@
       const cash = getCumulativeCashBalance(month, year);
 
       const text = `*LAPORAN KEUANGAN APARTEMENKU*\n` +
-        `Unit: *Saladin Mansion*\n` +
+        `Unit: *${apartment?.name || 'Saladin Mansion'}*\n` +
         `Periode: *${MONTHS[month - 1]} ${year}*\n\n` +
         `• Omzet Sewa (${m.txCount} transaksi): *${formatRp(m.omzet)}*\n` +
         `• Modal Sewa Bulanan: *${formatRp(m.monthlyCapital)}* (${m.isRentPaid ? 'Lunas' : 'Belum bayar'})\n` +
@@ -1499,19 +1664,33 @@
 
     function exportCSV() {
       let csv = 'Tanggal,Tipe,Tamu/Keterangan,Paket/Kategori,Nominal,Diterima,Metode,Status\n';
-      transactions.forEach(t => {
+      getAptTransactions().forEach(t => {
         csv += `"${t.transaction_date}","${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}","${t.guest_name || t.description || ''}","${t.package_name || t.expense_category || ''}",${t.amount},${t.paid_amount},"${t.payment_method}","${t.payment_status}"\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Laporan_ApartemenKu_SaladinMansion_${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `Laporan_${(apartment?.name || 'SaladinMansion').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
     }
 
-    // ================= PENGATURAN & PAKET =================
+    // ================= PENGATURAN & PRICELIST =================
     function renderSettingsTab() {
+      // Daftar Unit Apartemen
+      document.getElementById('settings-apt-list').innerHTML = apartments.map(a => `
+        <div class="p-2.5 rounded-xl border ${a.id === activeAptId ? 'bg-amber-50 border-amber-400' : 'bg-cream border-slate-200'} flex items-center justify-between text-xs">
+          <div>
+            <span class="font-extrabold">${a.name}</span>
+            <span class="text-[11px] text-slate-500 ml-2">Modal: ${formatRp(a.monthly_rent)} • Tempo Tgl ${a.due_day}</span>
+          </div>
+          <div class="flex gap-1.5">
+            ${a.id !== activeAptId ? `<button onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
+            ${apartments.length > 1 ? `<button onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+
       if (apartment) {
         document.getElementById('set-apt-name').value = apartment.name;
         document.getElementById('set-apt-rent').value = apartment.monthly_rent;
@@ -1526,18 +1705,30 @@
         document.getElementById('set-font').value = settings.font_size;
       }
 
-      document.getElementById('settings-pkg-list').innerHTML = packages.map(p => `
-        <div class="py-2.5 flex items-center justify-between">
+      // Render Price List & Paket Hemat Terpisah
+      const regularPkgs = packages.filter(p => !p.name.startsWith('Paket Hemat:'));
+      const hematPkgs = packages.filter(p => p.name.startsWith('Paket Hemat:'));
+
+      const renderPkgRow = (p, prefixToStrip) => `
+        <div class="py-2 flex items-center justify-between gap-2">
           <div>
-            <p class="font-extrabold">${p.name}</p>
-            <p class="text-[11px] text-slate-500">${formatRp(p.price)} • ${p.duration_hours} Jam</p>
+            <p class="font-extrabold text-slate-900">${p.name.replace(prefixToStrip, '')}</p>
+            <p class="text-[11px] font-bold text-amber-700">${formatRp(p.price)} <span class="text-slate-400 font-normal">(${p.duration_hours} jam)</span></p>
           </div>
-          <div class="flex gap-2">
-            <button onclick="openPkgModal('${p.id}')" class="px-2.5 py-1 rounded bg-slate-100 font-bold">Edit</button>
-            <button onclick="deletePackage('${p.id}')" class="px-2.5 py-1 rounded bg-rose-50 text-rose-600 font-bold">Hapus</button>
+          <div class="flex gap-1.5 shrink-0">
+            <button onclick="openPkgModal('${p.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 font-bold text-[11px]">Edit</button>
+            <button onclick="deletePackage('${p.id}')" class="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 font-bold text-[11px]">Hapus</button>
           </div>
         </div>
-      `).join('');
+      `;
+
+      document.getElementById('settings-pricelist-regular').innerHTML = regularPkgs.length
+        ? regularPkgs.map(p => renderPkgRow(p, 'Price List: ')).join('')
+        : '<p class="text-slate-400 py-2">Belum ada item Price List.</p>';
+
+      document.getElementById('settings-pricelist-hemat').innerHTML = hematPkgs.length
+        ? hematPkgs.map(p => renderPkgRow(p, 'Paket Hemat: ')).join('')
+        : '<p class="text-slate-400 py-2">Belum ada item Paket Hemat.</p>';
     }
 
     async function saveApartmentAndSettings(e) {
@@ -1564,15 +1755,20 @@
     function openPkgModal(id = null) {
       if (id) {
         const p = packages.find(x => x.id === id);
+        const isHemat = p.name.startsWith('Paket Hemat:');
+        document.getElementById('pkg-modal-title').textContent = 'Edit Harga / Paket';
         document.getElementById('pkg-id').value = p.id;
-        document.getElementById('pkg-name').value = p.name;
+        document.getElementById('pkg-category').value = isHemat ? 'Paket Hemat' : 'Price List';
+        document.getElementById('pkg-name').value = p.name.replace('Price List: ', '').replace('Paket Hemat: ', '');
         document.getElementById('pkg-price').value = p.price;
         document.getElementById('pkg-hours').value = p.duration_hours;
       } else {
+        document.getElementById('pkg-modal-title').textContent = 'Tambah Price List / Paket';
         document.getElementById('pkg-id').value = '';
+        document.getElementById('pkg-category').value = 'Price List';
         document.getElementById('pkg-name').value = '';
         document.getElementById('pkg-price').value = '';
-        document.getElementById('pkg-hours').value = 3;
+        document.getElementById('pkg-hours').value = 2;
       }
       document.getElementById('pkg-modal').classList.remove('hidden');
     }
@@ -1580,9 +1776,13 @@
     async function savePackage(e) {
       e.preventDefault();
       const id = document.getElementById('pkg-id').value;
+      const cat = document.getElementById('pkg-category').value;
+      const rawName = document.getElementById('pkg-name').value.trim();
+      const fullName = `${cat}: ${rawName}`;
+
       const payload = {
         user_id: currentUser.id,
-        name: document.getElementById('pkg-name').value.trim(),
+        name: fullName,
         price: Number(document.getElementById('pkg-price').value),
         duration_hours: Number(document.getElementById('pkg-hours').value)
       };
@@ -1590,19 +1790,49 @@
       else await sb.from('pricing_packages').insert(payload);
 
       closeModal('pkg-modal');
-      showToast('Paket harga disimpan!');
+      showToast('Pricelist berhasil diperbarui!');
       await syncAllData(false);
     }
 
     async function deletePackage(id) {
-      if (!confirm('Hapus paket ini?')) return;
+      if (!confirm('Hapus item harga ini?')) return;
       await sb.from('pricing_packages').delete().eq('id', id);
-      showToast('Paket dihapus.');
+      showToast('Item harga dihapus.');
       await syncAllData(false);
     }
 
+    async function resetDefaultPackages() {
+      if (!confirm('Kembalikan daftar harga ke Pricelist & Paket Hemat default (2 Jam 60K s/d 1 Minggu 950K)?')) return;
+      await sb.from('pricing_packages').delete().eq('user_id', currentUser.id);
+      const rows = DEFAULT_PACKAGES.map(p => ({ ...p, user_id: currentUser.id }));
+      await sb.from('pricing_packages').insert(rows);
+      showToast('Pricelist dikembalikan ke pengaturan default!');
+      await syncAllData(false);
+    }
+
+    function sharePricelistWhatsApp() {
+      const regularPkgs = packages.filter(p => !p.name.startsWith('Paket Hemat:'));
+      const hematPkgs = packages.filter(p => p.name.startsWith('Paket Hemat:'));
+
+      let text = `*PRICE LIST ${apartment?.name?.toUpperCase() || 'SALADIN MANSION'}*\n\n`;
+      if (regularPkgs.length) {
+        text += `*PRICE LIST:*\n`;
+        regularPkgs.forEach(p => {
+          text += `• ${p.name.replace('Price List: ', '')} - ${formatRp(p.price)}\n`;
+        });
+        text += `\n`;
+      }
+      if (hematPkgs.length) {
+        text += `*PAKET HEMAT:*\n`;
+        hematPkgs.forEach(p => {
+          text += `• ${p.name.replace('Paket Hemat: ', '')} - ${formatRp(p.price)}\n`;
+        });
+      }
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
     function downloadBackupJSON() {
-      const backup = { exported_at: new Date().toISOString(), apartment, packages, transactions, rentPayments, settings };
+      const backup = { exported_at: new Date().toISOString(), apartments, packages, transactions, rentPayments, settings };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
