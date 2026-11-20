@@ -183,7 +183,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="card-surface rounded-2xl p-3.5">
             <p class="text-[11px] font-bold text-slate-500 text-muted">Modal Sewa Bulanan</p>
-            <p id="dash-modal" class="text-base font-extrabold mt-1">Rp3.000.000</p>
+            <p id="dash-modal" class="text-base font-extrabold mt-1">Rp1.600.000</p>
             <span id="dash-rent-status" class="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Belum dibayar</span>
           </div>
           <div class="card-surface rounded-2xl p-3.5">
@@ -197,9 +197,9 @@
             <p id="dash-avg-price" class="text-[10px] text-amber-600 font-bold mt-1">Rata-rata: Rp0</p>
           </div>
           <div class="card-surface rounded-2xl p-3.5">
-            <p class="text-[11px] font-bold text-slate-500 text-muted">Tingkat Okupansi</p>
-            <p id="dash-occupancy" class="text-base font-extrabold text-emerald-600 mt-1">0%</p>
-            <p id="dash-due-countdown" class="text-[10px] text-slate-500 font-semibold mt-1">Tempo tgl 17</p>
+            <p class="text-[11px] font-bold text-slate-500 text-muted">Sisa Masa Sewa & Okupansi</p>
+            <p id="dash-due-countdown" class="text-sm font-extrabold text-amber-600 mt-1">Sisa - hari</p>
+            <p id="dash-due-date-sub" class="text-[10px] text-slate-500 font-semibold mt-0.5">Tempo: 17 Nov 2026 • Okupansi 0%</p>
           </div>
         </div>
 
@@ -317,11 +317,11 @@
             <div>
               <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">Unit Terpilih</span>
               <h2 id="apt-name-display" class="text-xl font-extrabold mt-2">Saladin Mansion</h2>
-              <p class="text-xs text-slate-500 text-muted">Jatuh tempo setiap tanggal <span id="apt-due-display" class="font-bold">17</span></p>
+              <p class="text-xs text-slate-500 text-muted">Jatuh tempo sewa: <span id="apt-due-display" class="font-bold text-slate-800">17 November 2026</span></p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button onclick="openAptModal(true)" class="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
-                <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit Sewa Unit
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit Sewa & Tempo
               </button>
               <button onclick="openAptModal(false)" class="px-3.5 py-2.5 rounded-xl bg-amber-500 text-slate-900 text-xs font-extrabold flex items-center gap-1.5">
                 <i data-lucide="plus" class="w-4 h-4"></i> + Unit Baru
@@ -335,15 +335,15 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div class="p-3 rounded-xl bg-cream border border-slate-200">
               <p class="text-[11px] text-slate-500 font-bold">Modal Sewa Bulanan</p>
-              <p id="apt-rent-display" class="text-base font-extrabold text-slate-900 mt-0.5">Rp3.000.000</p>
+              <p id="apt-rent-display" class="text-base font-extrabold text-slate-900 mt-0.5">Rp1.600.000</p>
             </div>
             <div class="p-3 rounded-xl bg-cream border border-slate-200">
               <p class="text-[11px] text-slate-500 font-bold">Deposit</p>
               <p id="apt-deposit-display" class="text-base font-extrabold text-slate-900 mt-0.5">Rp0</p>
             </div>
-            <div class="p-3 rounded-xl bg-cream border border-slate-200">
-              <p class="text-[11px] text-slate-500 font-bold">Hitung Mundur Tempo</p>
-              <p id="apt-countdown-display" class="text-base font-extrabold text-amber-600 mt-0.5">-</p>
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-300">
+              <p class="text-[11px] text-amber-800 font-bold">Sisa Masa Sewa</p>
+              <p id="apt-countdown-display" class="text-base font-extrabold text-amber-700 mt-0.5">-</p>
             </div>
             <div class="p-3 rounded-xl bg-cream border border-slate-200">
               <p class="text-[11px] text-slate-500 font-bold">Laba Bersih Bulan Ini</p>
@@ -447,7 +447,7 @@
         <div class="card-surface rounded-2xl p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Pengaturan Sewa Apartemen & Pengingat</h3>
+              <h3 class="text-sm font-extrabold flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-amber-500"></i> Pengaturan Sewa Apartemen & Jatuh Tempo</h3>
               <p class="text-[11px] text-slate-500 text-muted">Edit nama apartemen, harga sewa bulanan, deposit, dan tanggal jatuh tempo</p>
             </div>
             <button onclick="openAptModal(false)" class="px-3 py-1.5 rounded-xl bg-slate-900 text-amber-400 text-xs font-bold">+ Tambah Unit Apartemen</button>
@@ -470,8 +470,8 @@
               <input type="number" id="set-apt-deposit" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
             </div>
             <div>
-              <label class="block font-bold mb-1">Tanggal Jatuh Tempo Sewa (1-31)</label>
-              <input type="number" id="set-apt-due" min="1" max="31" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+              <label class="block font-bold mb-1">Tanggal Jatuh Tempo Sewa</label>
+              <input type="date" id="set-apt-due-date" required class="input-surface w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
             </div>
             <div>
               <label class="block font-bold mb-1">Pengingat Sebelum Tempo (Hari)</label>
@@ -789,7 +789,7 @@
   <div id="apt-modal" class="fixed inset-0 z-50 hidden bg-black/60 flex items-center justify-center p-4">
     <div class="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 id="apt-modal-title" class="font-extrabold text-base">Tambah Unit Apartemen Baru</h3>
+        <h3 id="apt-modal-title" class="font-extrabold text-base">Edit Sewa & Data Apartemen</h3>
         <button onclick="closeModal('apt-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form onsubmit="saveApartmentModal(event)" class="space-y-3 text-xs">
@@ -800,15 +800,15 @@
         </div>
         <div>
           <label class="block font-bold mb-1">Harga Sewa Apartemen / Bulan (Rp)</label>
-          <input type="number" id="new-apt-rent" required value="3000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          <input type="number" id="new-apt-rent" required value="1600000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
         </div>
         <div>
           <label class="block font-bold mb-1">Deposit Sewa (Rp)</label>
           <input type="number" id="new-apt-deposit" required value="0" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div>
-          <label class="block font-bold mb-1">Tanggal Jatuh Tempo (1-31)</label>
-          <input type="number" id="new-apt-due" min="1" max="31" required value="17" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <label class="block font-bold mb-1">Tanggal Jatuh Tempo Sewa</label>
+          <input type="date" id="new-apt-due-date" required value="2026-11-17" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
         </div>
         <div class="pt-2 flex gap-2">
           <button type="button" onclick="closeModal('apt-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
@@ -854,6 +854,12 @@
 
     // ================= UTILITAS =================
     const formatRp = (num) => 'Rp' + Math.round(Number(num || 0)).toLocaleString('id-ID');
+    const formatIndoDate = (isoStr) => {
+      if (!isoStr) return '17 November 2026';
+      const [y, m, d] = isoStr.slice(0, 10).split('-').map(Number);
+      if (!y || !m || !d) return isoStr;
+      return `${d} ${MONTHS[m - 1]} ${y}`;
+    };
     const showToast = (msg) => {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -862,6 +868,33 @@
     };
     const closeModal = (id) => document.getElementById(id).classList.add('hidden');
     const openMoreMenu = () => document.getElementById('more-menu-modal').classList.remove('hidden');
+
+    function getDueDateInfo(apt) {
+      let dueStr = apt?.due_date;
+      if (!dueStr) {
+        const now = new Date();
+        const day = String(apt?.due_day || 17).padStart(2, '0');
+        const mon = String(now.getMonth() + 1).padStart(2, '0');
+        dueStr = `${now.getFullYear()}-${mon}-${day}`;
+      }
+      const [y, m, d] = dueStr.slice(0, 10).split('-').map(Number);
+      const dueObj = new Date(y, m - 1, d);
+      const now = new Date();
+      const todayObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffDays = Math.round((dueObj - todayObj) / (1000 * 60 * 60 * 24));
+
+      let countdownText = '';
+      if (diffDays > 0) countdownText = `Sisa ${diffDays} hari lagi`;
+      else if (diffDays === 0) countdownText = 'Jatuh tempo hari ini!';
+      else countdownText = `Lewat ${Math.abs(diffDays)} hari`;
+
+      return {
+        dueStr: dueStr.slice(0, 10),
+        formattedDate: formatIndoDate(dueStr),
+        diffDays,
+        countdownText
+      };
+    }
 
     // ================= INISIALISASI AWAL =================
     window.addEventListener('DOMContentLoaded', async () => {
@@ -978,11 +1011,12 @@
           const { data: createdApt } = await sb.from('apartments').insert({
             user_id: currentUser.id,
             name: 'Saladin Mansion',
-            monthly_rent: 3000000,
+            monthly_rent: 1600000,
             deposit: 0,
-            due_day: 17
+            due_day: 17,
+            due_date: '2026-11-17'
           }).select().single();
-          apartments = createdApt ? [createdApt] : [{ id: null, name: 'Saladin Mansion', monthly_rent: 3000000, deposit: 0, due_day: 17 }];
+          apartments = createdApt ? [createdApt] : [{ id: null, name: 'Saladin Mansion', monthly_rent: 1600000, deposit: 0, due_day: 17, due_date: '2026-11-17' }];
         }
         if (!activeAptId || !apartments.find(a => a.id === activeAptId)) {
           activeAptId = apartments[0].id;
@@ -1072,7 +1106,7 @@
       const receivable = omzet - actualCashIn;
 
       const opsExpense = mExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const monthlyCapital = Number(apartment?.monthly_rent || 3000000);
+      const monthlyCapital = Number(apartment?.monthly_rent || 1600000);
       const isRentPaid = rentRecord && rentRecord.status === 'Sudah dibayar';
       const actualRentOut = isRentPaid ? Number(rentRecord.amount || monthlyCapital) : 0;
 
@@ -1119,6 +1153,7 @@
       const year = Number(document.getElementById('filter-year').value);
       const m = getMonthMetrics(month, year);
       const cashBalance = getCumulativeCashBalance(month, year);
+      const dueInfo = getDueDateInfo(apartment);
 
       document.getElementById('dash-omzet').textContent = formatRp(m.omzet);
       const npEl = document.getElementById('dash-net-profit');
@@ -1139,24 +1174,18 @@
       document.getElementById('dash-expense').textContent = formatRp(m.opsExpense);
       document.getElementById('dash-tx-count').textContent = `${m.txCount} Transaksi`;
       document.getElementById('dash-avg-price').textContent = `Rata-rata: ${formatRp(m.avgPrice)}`;
-      document.getElementById('dash-occupancy').textContent = `${m.occupancyPct}%`;
 
-      const today = new Date();
-      const dueDay = Number(apartment?.due_day || 17);
-      let dueDate = new Date(today.getFullYear(), today.getMonth(), dueDay);
-      if (today.getDate() > dueDay && m.isRentPaid) {
-        dueDate = new Date(today.getFullYear(), today.getMonth() + 1, dueDay);
-      }
-      const diffDays = Math.ceil((dueDate - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / (1000 * 60 * 60 * 24));
-      const countdownText = diffDays === 0 ? 'Hari ini jatuh tempo!' : diffDays > 0 ? `H-${diffDays} (Tgl ${dueDay})` : `Lewat ${Math.abs(diffDays)} hari`;
-      document.getElementById('dash-due-countdown').textContent = countdownText;
+      const countdownEl = document.getElementById('dash-due-countdown');
+      countdownEl.textContent = dueInfo.countdownText;
+      countdownEl.className = 'text-sm font-extrabold mt-1 ' + (dueInfo.diffDays < 0 ? 'text-rose-600' : dueInfo.diffDays <= 7 ? 'text-amber-600' : 'text-blue-600');
+      document.getElementById('dash-due-date-sub').textContent = `Tempo: ${dueInfo.formattedDate} • Okupansi ${m.occupancyPct}%`;
 
       const remDays = Number(settings?.reminder_days_before || 7);
       const banner = document.getElementById('reminder-banner');
-      if (!m.isRentPaid && diffDays <= remDays) {
+      if (!m.isRentPaid && dueInfo.diffDays <= remDays) {
         banner.classList.remove('hidden');
-        document.getElementById('reminder-title').textContent = `Pengingat Sewa ${apartment?.name || 'Saladin Mansion'} (${countdownText})`;
-        document.getElementById('reminder-desc').textContent = `Tagihan sewa ${formatRp(m.monthlyCapital)} jatuh tempo tanggal ${dueDay}. Pengingat aktif pukul ${settings?.reminder_time || '09:00'} WIB.`;
+        document.getElementById('reminder-title').textContent = `Pengingat Sewa ${apartment?.name || 'Saladin Mansion'} (${dueInfo.countdownText})`;
+        document.getElementById('reminder-desc').textContent = `Tagihan sewa ${formatRp(m.monthlyCapital)} jatuh tempo ${dueInfo.formattedDate}. Pengingat aktif pukul ${settings?.reminder_time || '09:00'} WIB.`;
       } else {
         banner.classList.add('hidden');
       }
@@ -1172,7 +1201,7 @@
       renderTransactionsList(m.mIncomes);
       renderExpensesList(m.mExpenses);
       renderCalendar(month, year, m.mIncomes);
-      renderApartmentTab(m, countdownText);
+      renderApartmentTab(m, dueInfo);
       renderReportsComparison(month, year, m);
       renderSettingsTab();
       lucide.createIcons();
@@ -1219,7 +1248,7 @@
         container.innerHTML = '<div class="card-surface rounded-2xl p-8 text-center text-xs text-slate-400">Belum ada transaksi tamu pada periode ini.</div>';
         return;
       }
-      const dailyCap = Number(apartment?.monthly_rent || 3000000) / 30;
+      const dailyCap = Number(apartment?.monthly_rent || 1600000) / 30;
       container.innerHTML = filtered.map(t => {
         const prorata = Math.round(dailyCap * Number(t.duration_days || 1));
         const estProfit = Number(t.amount) - prorata;
@@ -1508,12 +1537,12 @@
     }
 
     // ================= PENGELOLAAN APARTEMEN & SEWA =================
-    function renderApartmentTab(m, countdownText) {
+    function renderApartmentTab(m, dueInfo) {
       document.getElementById('apt-name-display').textContent = apartment?.name || 'Saladin Mansion';
-      document.getElementById('apt-due-display').textContent = apartment?.due_day || 17;
-      document.getElementById('apt-rent-display').textContent = formatRp(apartment?.monthly_rent || 3000000);
+      document.getElementById('apt-due-display').textContent = dueInfo.formattedDate;
+      document.getElementById('apt-rent-display').textContent = formatRp(apartment?.monthly_rent || 1600000);
       document.getElementById('apt-deposit-display').textContent = formatRp(apartment?.deposit || 0);
-      document.getElementById('apt-countdown-display').textContent = countdownText;
+      document.getElementById('apt-countdown-display').textContent = dueInfo.countdownText;
       document.getElementById('apt-profit-display').textContent = formatRp(m.netProfit);
 
       const histEl = document.getElementById('rent-history-list');
@@ -1544,19 +1573,20 @@
     function openAptModal(isEdit = false, targetId = null) {
       if (isEdit) {
         const target = targetId ? apartments.find(a => a.id === targetId) : apartment;
-        document.getElementById('apt-modal-title').textContent = 'Edit Sewa & Data Apartemen';
+        const dueInfo = getDueDateInfo(target);
+        document.getElementById('apt-modal-title').textContent = 'Edit Sewa & Tanggal Jatuh Tempo';
         document.getElementById('edit-apt-id').value = target?.id || '';
         document.getElementById('new-apt-name').value = target?.name || 'Saladin Mansion';
-        document.getElementById('new-apt-rent').value = target?.monthly_rent ?? 3000000;
+        document.getElementById('new-apt-rent').value = target?.monthly_rent ?? 1600000;
         document.getElementById('new-apt-deposit').value = target?.deposit ?? 0;
-        document.getElementById('new-apt-due').value = target?.due_day ?? 17;
+        document.getElementById('new-apt-due-date').value = dueInfo.dueStr;
       } else {
         document.getElementById('apt-modal-title').textContent = 'Tambah Unit Apartemen Baru';
         document.getElementById('edit-apt-id').value = '';
         document.getElementById('new-apt-name').value = '';
-        document.getElementById('new-apt-rent').value = 3000000;
+        document.getElementById('new-apt-rent').value = 1600000;
         document.getElementById('new-apt-deposit').value = 0;
-        document.getElementById('new-apt-due').value = 17;
+        document.getElementById('new-apt-due-date').value = '2026-11-17';
       }
       document.getElementById('apt-modal').classList.remove('hidden');
     }
@@ -1564,18 +1594,22 @@
     async function saveApartmentModal(e) {
       e.preventDefault();
       const editId = document.getElementById('edit-apt-id').value;
+      const dueDateVal = document.getElementById('new-apt-due-date').value;
+      const dueDayNum = Number(dueDateVal.split('-')[2] || 17);
+
       const payload = {
         user_id: currentUser.id,
         name: document.getElementById('new-apt-name').value.trim(),
         monthly_rent: Number(document.getElementById('new-apt-rent').value),
         deposit: Number(document.getElementById('new-apt-deposit').value),
-        due_day: Number(document.getElementById('new-apt-due').value)
+        due_day: dueDayNum,
+        due_date: dueDateVal
       };
 
       if (editId) {
         const { error } = await sb.from('apartments').update(payload).eq('id', editId);
         if (error) return alert('Gagal menyimpan perubahan unit: ' + error.message);
-        showToast('Data sewa apartemen diperbarui!');
+        showToast('Data sewa & jatuh tempo diperbarui!');
       } else {
         const { data, error } = await sb.from('apartments').insert(payload).select().single();
         if (error) return alert('Gagal menambah unit: ' + error.message);
@@ -1613,7 +1647,7 @@
         document.getElementById('rent-pay-id').value = '';
         document.getElementById('rent-month').value = document.getElementById('filter-month').value;
         document.getElementById('rent-year').value = document.getElementById('filter-year').value;
-        document.getElementById('rent-amount').value = apartment?.monthly_rent || 3000000;
+        document.getElementById('rent-amount').value = apartment?.monthly_rent || 1600000;
         document.getElementById('rent-date').value = new Date().toISOString().slice(0, 10);
         document.getElementById('rent-status').value = 'Sudah dibayar';
         document.getElementById('rent-method').value = 'Transfer';
@@ -1724,10 +1758,12 @@
       const year = Number(document.getElementById('filter-year').value);
       const m = getMonthMetrics(month, year);
       const cash = getCumulativeCashBalance(month, year);
+      const dueInfo = getDueDateInfo(apartment);
 
       const text = `*LAPORAN KEUANGAN APARTEMENKU*\n` +
         `Unit: *${apartment?.name || 'Saladin Mansion'}*\n` +
-        `Periode: *${MONTHS[month - 1]} ${year}*\n\n` +
+        `Periode: *${MONTHS[month - 1]} ${year}*\n` +
+        `Jatuh Tempo Sewa: *${dueInfo.formattedDate}* (${dueInfo.countdownText})\n\n` +
         `• Omzet Sewa (${m.txCount} transaksi): *${formatRp(m.omzet)}*\n` +
         `• Modal Sewa Bulanan: *${formatRp(m.monthlyCapital)}* (${m.isRentPaid ? 'Lunas' : 'Belum bayar'})\n` +
         `• Pengeluaran Operasional: *${formatRp(m.opsExpense)}*\n` +
@@ -1753,25 +1789,29 @@
 
     // ================= PENGATURAN & PRICELIST =================
     function renderSettingsTab() {
-      document.getElementById('settings-apt-list').innerHTML = apartments.map(a => `
-        <div class="p-2.5 rounded-xl border ${a.id === activeAptId ? 'bg-amber-50 border-amber-400' : 'bg-cream border-slate-200'} flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div>
-            <span class="font-extrabold">${a.name}</span>
-            <span class="text-[11px] text-slate-600 block sm:inline sm:ml-2">Sewa: <strong>${formatRp(a.monthly_rent)}</strong> • Deposit: ${formatRp(a.deposit)} • Tempo Tgl ${a.due_day}</span>
+      document.getElementById('settings-apt-list').innerHTML = apartments.map(a => {
+        const dInfo = getDueDateInfo(a);
+        return `
+          <div class="p-2.5 rounded-xl border ${a.id === activeAptId ? 'bg-amber-50 border-amber-400' : 'bg-cream border-slate-200'} flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div>
+              <span class="font-extrabold">${a.name}</span>
+              <span class="text-[11px] text-slate-600 block sm:inline sm:ml-2">Sewa: <strong>${formatRp(a.monthly_rent)}</strong> • Tempo: <strong>${dInfo.formattedDate}</strong> (${dInfo.countdownText})</span>
+            </div>
+            <div class="flex gap-1.5">
+              <button type="button" onclick="openAptModal(true, '${a.id}')" class="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-800 text-[10px] font-bold">Edit</button>
+              ${a.id !== activeAptId ? `<button type="button" onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
+              ${apartments.length > 1 ? `<button type="button" onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
+            </div>
           </div>
-          <div class="flex gap-1.5">
-            <button type="button" onclick="openAptModal(true, '${a.id}')" class="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-800 text-[10px] font-bold">Edit</button>
-            ${a.id !== activeAptId ? `<button type="button" onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
-            ${apartments.length > 1 ? `<button type="button" onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       if (apartment) {
+        const dInfo = getDueDateInfo(apartment);
         document.getElementById('set-apt-name').value = apartment.name;
         document.getElementById('set-apt-rent').value = apartment.monthly_rent;
         document.getElementById('set-apt-deposit').value = apartment.deposit;
-        document.getElementById('set-apt-due').value = apartment.due_day;
+        document.getElementById('set-apt-due-date').value = dInfo.dueStr;
       }
       if (settings) {
         document.getElementById('set-rem-days').value = settings.reminder_days_before;
@@ -1813,12 +1853,16 @@
       btn.textContent = 'Menyimpan...';
 
       try {
+        const dueDateVal = document.getElementById('set-apt-due-date').value;
+        const dueDayNum = Number(dueDateVal.split('-')[2] || 17);
+
         const aptPayload = {
           user_id: currentUser.id,
           name: document.getElementById('set-apt-name').value.trim(),
           monthly_rent: Number(document.getElementById('set-apt-rent').value),
           deposit: Number(document.getElementById('set-apt-deposit').value),
-          due_day: Number(document.getElementById('set-apt-due').value)
+          due_day: dueDayNum,
+          due_date: dueDateVal
         };
 
         if (apartment && apartment.id) {
@@ -1848,7 +1892,7 @@
           if (setInsErr) throw setInsErr;
         }
 
-        showToast('Pengaturan sewa apartemen berhasil disimpan!');
+        showToast('Pengaturan sewa & tanggal tempo berhasil disimpan!');
         await syncAllData(false);
       } catch (err) {
         alert('Gagal menyimpan pengaturan: ' + err.message);
