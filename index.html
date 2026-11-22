@@ -247,7 +247,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-lg font-extrabold">Transaksi Penyewaan Tamu</h2>
-            <p class="text-xs text-slate-500 text-muted">Perhitungan otomatis modal prorata & estimasi profit per transaksi</p>
+            <p class="text-xs text-slate-500 text-muted">Transaksi terbaru tampil di paling atas • Perhitungan otomatis modal prorata & profit</p>
           </div>
           <button onclick="openTxModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold text-xs flex items-center gap-1.5 shadow">
             <i data-lucide="plus" class="w-4 h-4"></i> Tambah Transaksi
@@ -403,7 +403,7 @@
 
       <!-- ==================== TAB 7: PENGATURAN & PRICELIST ==================== -->
       <section id="view-settings" class="view-section hidden space-y-4">
-        
+
         <!-- PENGATURAN PRICELIST & PAKET HEMAT -->
         <div class="card-surface rounded-2xl p-4 space-y-3 border-t-4 border-t-amber-500">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -864,7 +864,6 @@
       return `${d} ${MONTHS[m - 1]} ${y}`;
     };
 
-    // Konversi Date / ISO string ke format YYYY-MM-DDTHH:mm waktu lokal (WIB)
     function toLocalDatetimeInput(dateInput) {
       if (!dateInput) return '';
       const d = new Date(dateInput);
@@ -873,7 +872,6 @@
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
-    // Format tanggal + jam rapi untuk pesan WhatsApp customer
     function formatWADatetime(dateInput) {
       if (!dateInput) return '-';
       const d = new Date(dateInput);
@@ -884,7 +882,6 @@
       return `${tgl}, pukul ${jam} WIB`;
     }
 
-    // Normalisasi nomor HP Indonesia ke format 628xxx
     function normalizeWhatsAppPhone(rawPhone) {
       if (!rawPhone) return '';
       let digits = String(rawPhone).replace(/\D/g, '');
@@ -1037,7 +1034,7 @@
         const [aptRes, pkgRes, txRes, rentRes, setRes] = await Promise.all([
           sb.from('apartments').select('*').order('created_at', { ascending: true }),
           sb.from('pricing_packages').select('*').order('duration_hours', { ascending: true }),
-          sb.from('transactions').select('*').order('transaction_date', { ascending: false }),
+          sb.from('transactions').select('*').order('check_in', { ascending: false }),
           sb.from('rent_payments').select('*').order('period_year', { ascending: false }),
           sb.from('app_settings').select('*').limit(1).maybeSingle()
         ]);
@@ -1323,7 +1320,15 @@
     }
 
     function renderTransactionsList(list) {
-      const filtered = txStatusFilter === 'ALL' ? list : list.filter(t => t.payment_status === txStatusFilter);
+      // Transaksi terbaru selalu muncul di paling atas (berdasarkan check_in, lalu created_at / transaction_date)
+      const sortedList = [...list].sort((a, b) => {
+        const timeA = new Date(a.check_in || a.created_at || a.transaction_date || 0).getTime();
+        const timeB = new Date(b.check_in || b.created_at || b.transaction_date || 0).getTime();
+        if (timeB !== timeA) return timeB - timeA;
+        return new Date(b.created_at || b.transaction_date || 0).getTime() - new Date(a.created_at || a.transaction_date || 0).getTime();
+      });
+
+      const filtered = txStatusFilter === 'ALL' ? sortedList : sortedList.filter(t => t.payment_status === txStatusFilter);
       const container = document.getElementById('tx-list');
       if (!filtered.length) {
         container.innerHTML = '<div class="card-surface rounded-2xl p-8 text-center text-xs text-slate-400">Belum ada transaksi tamu pada periode ini.</div>';
@@ -1418,7 +1423,6 @@
       lucide.createIcons();
     }
 
-    // Deteksi durasi jam dari atribut paket atau teks nama paket (misal: "5 Jam", "Fullday", dll.)
     function getSelectedPackageHours() {
       const sel = document.getElementById('tx-package');
       const opt = sel.options[sel.selectedIndex];
@@ -1435,7 +1439,6 @@
       return 0;
     }
 
-    // Hitung otomatis Check-Out berdasarkan Check-In + durasi jam paket
     function autoCalculateCheckoutFromPackage() {
       const hours = getSelectedPackageHours();
       const ciVal = document.getElementById('tx-checkin').value;
@@ -1460,7 +1463,6 @@
       syncPaidAmount();
     }
 
-    // Dipanggil setiap kali tanggal/jam Check-In diubah
     function onCheckinChange() {
       const updated = autoCalculateCheckoutFromPackage();
       if (!updated) calcDurationFromDates();
@@ -1930,7 +1932,7 @@
             <div class="flex gap-1.5">
               <button type="button" onclick="openAptModal(true, '${a.id}')" class="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-800 text-[10px] font-bold">Edit</button>
               ${a.id !== activeAptId ? `<button type="button" onclick="onSwitchApartment('${a.id}')" class="px-2.5 py-1 rounded bg-slate-900 text-amber-400 text-[10px] font-bold">Pilih</button>` : `<span class="px-2 py-1 rounded bg-amber-500 text-slate-900 text-[10px] font-extrabold">Aktif</span>`}
-              ${apartments.length > 1 ? `<button type="button" onclick="deleteApartment('${a.id}')" class="px-2 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
+              ${apartments.length > 1 ? `<button type="button" onclick="deleteApartment('${a.id}')" class="px-2.5 py-1 rounded bg-rose-100 text-rose-700 text-[10px] font-bold">Hapus</button>` : ''}
             </div>
           </div>
         `;
