@@ -561,7 +561,7 @@
         <h3 id="tx-modal-title" class="font-extrabold text-base">Tambah Transaksi Tamu</h3>
         <button onclick="closeModal('tx-modal')" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form onsubmit="saveTransaction(event)" class="space-y-3 text-xs">
+      <form id="tx-form" onsubmit="saveTransaction(event, false)" class="space-y-3 text-xs">
         <input type="hidden" id="tx-id" />
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -586,10 +586,10 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold mb-1">Check-In</label>
-            <input type="datetime-local" id="tx-checkin" onchange="calcDurationFromDates()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+            <input type="datetime-local" id="tx-checkin" onchange="onCheckinChange()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
           </div>
           <div>
-            <label class="block font-bold mb-1">Check-Out</label>
+            <label class="block font-bold mb-1">Check-Out <span class="text-[10px] font-semibold text-amber-600">(Otomatis)</span></label>
             <input type="datetime-local" id="tx-checkout" onchange="calcDurationFromDates()" required class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
           </div>
         </div>
@@ -626,11 +626,14 @@
         </div>
         <div>
           <label class="block font-bold mb-1">Catatan Tambahan</label>
-          <input type="text" id="tx-notes" placeholder="Opsional..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <input type="text" id="tx-notes" placeholder="Opsional (misal: lantai, permintaan khusus)..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
-        <div class="pt-2 flex gap-2">
-          <button type="button" onclick="closeModal('tx-modal')" class="flex-1 py-3 rounded-xl bg-slate-100 font-bold">Batal</button>
-          <button type="submit" class="flex-1 py-3 rounded-xl bg-amber-500 text-slate-900 font-extrabold">Simpan Transaksi</button>
+        <div class="pt-2 flex flex-wrap gap-2">
+          <button type="button" onclick="closeModal('tx-modal')" class="py-3 px-4 rounded-xl bg-slate-100 font-bold">Batal</button>
+          <button type="submit" class="flex-1 py-3 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold">Simpan</button>
+          <button type="button" onclick="saveAndShareTx(event)" class="flex-1 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold flex items-center justify-center gap-1.5">
+            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Simpan & Share WA
+          </button>
         </div>
       </form>
     </div>
@@ -767,11 +770,11 @@
         </div>
         <div>
           <label class="block font-bold mb-1">Nama Paket / Durasi</label>
-          <input type="text" id="pkg-name" required placeholder="Contoh: 2 Jam / Morning (06.00-12.00)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
+          <input type="text" id="pkg-name" required placeholder="Contoh: 5 Jam / Morning (06.00-12.00)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300" />
         </div>
         <div>
           <label class="block font-bold mb-1">Harga Sewa (Rp)</label>
-          <input type="number" id="pkg-price" required placeholder="Contoh: 60000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
+          <input type="number" id="pkg-price" required placeholder="Contoh: 110000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold" />
         </div>
         <div>
           <label class="block font-bold mb-1">Durasi Paket (Jam)</label>
@@ -860,6 +863,35 @@
       if (!y || !m || !d) return isoStr;
       return `${d} ${MONTHS[m - 1]} ${y}`;
     };
+
+    // Konversi Date / ISO string ke format YYYY-MM-DDTHH:mm waktu lokal (WIB)
+    function toLocalDatetimeInput(dateInput) {
+      if (!dateInput) return '';
+      const d = new Date(dateInput);
+      if (Number.isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    // Format tanggal + jam rapi untuk pesan WhatsApp customer
+    function formatWADatetime(dateInput) {
+      if (!dateInput) return '-';
+      const d = new Date(dateInput);
+      if (Number.isNaN(d.getTime())) return String(dateInput);
+      const tgl = `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+      const pad = (n) => String(n).padStart(2, '0');
+      const jam = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return `${tgl}, pukul ${jam} WIB`;
+    }
+
+    // Normalisasi nomor HP Indonesia ke format 628xxx
+    function normalizeWhatsAppPhone(rawPhone) {
+      if (!rawPhone) return '';
+      let digits = String(rawPhone).replace(/\D/g, '');
+      if (digits.startsWith('0')) digits = '62' + digits.slice(1);
+      return digits;
+    }
+
     const showToast = (msg) => {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -1234,6 +1266,51 @@
       `).join('');
     }
 
+    // ================= SHARE DETAIL RESERVASI KE WHATSAPP CUSTOMER =================
+    function buildGuestWhatsAppMessage(txData) {
+      const unitName = apartment?.name || 'Saladin Mansion';
+      const cleanPackage = (txData.package_name || 'Custom')
+        .replace('Price List: ', '')
+        .replace('Paket Hemat: ', '');
+
+      const lines = [
+        `*DETAIL RESERVASI — ${unitName.toUpperCase()}*`,
+        `Halo Kak *${txData.guest_name || 'Tamu'}*, berikut detail penyewaan apartemen Anda:`,
+        ``,
+        `• *Paket Sewa:* ${cleanPackage}`,
+        `• *Harga Sewa:* ${formatRp(txData.amount)} (${txData.payment_status || 'Lunas'})`,
+        `• *Check-In:* ${formatWADatetime(txData.check_in)}`,
+        `• *Check-Out:* ${formatWADatetime(txData.check_out)}`,
+        `• *Metode Payment:* ${txData.payment_method || '-'}`
+      ];
+
+      if (txData.notes && String(txData.notes).trim() !== '') {
+        lines.push(`• *Catatan Tambahan:* ${String(txData.notes).trim()}`);
+      }
+
+      lines.push(
+        ``,
+        `Terima kasih telah mempercayakan menginap di *${unitName}*. Silakan hubungi kami jika ada pertanyaan atau perpanjangan waktu.`
+      );
+
+      return lines.join('\n');
+    }
+
+    function openGuestWhatsAppShare(txData) {
+      const msg = buildGuestWhatsAppMessage(txData);
+      const phone = normalizeWhatsAppPhone(txData.guest_whatsapp);
+      const url = phone
+        ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function shareTxWhatsAppById(id) {
+      const t = transactions.find(x => x.id === id);
+      if (!t) return;
+      openGuestWhatsAppShare(t);
+    }
+
     // ================= TRANSAKSI TAMU CRUD =================
     function setTxFilter(status) {
       txStatusFilter = status;
@@ -1257,7 +1334,6 @@
         const prorata = Math.round(dailyCap * Number(t.duration_days || 1));
         const estProfit = Number(t.amount) - prorata;
         const badgeClass = t.payment_status === 'Lunas' ? 'bg-emerald-100 text-emerald-700' : t.payment_status === 'DP' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700';
-        const waLink = t.guest_whatsapp ? `https://wa.me/${t.guest_whatsapp.replace(/^0/, '62').replace(/\D/g, '')}` : null;
 
         return `
           <div class="card-surface rounded-2xl p-4 shadow-sm space-y-2.5">
@@ -1281,8 +1357,10 @@
               <div>Modal Prorata (${t.duration_days} hr): <strong>${formatRp(prorata)}</strong></div>
             </div>
             ${t.notes ? `<p class="text-[11px] italic text-slate-500">Catatan: ${t.notes}</p>` : ''}
-            <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
-              ${waLink ? `<a href="${waLink}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold">Chat WA</a>` : ''}
+            <div class="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-slate-100">
+              <button onclick="shareTxWhatsAppById('${t.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1">
+                <i data-lucide="share-2" class="w-3 h-3"></i> Share Detail WA
+              </button>
               <button onclick="openTxModal('${t.id}')" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-bold">Edit</button>
               <button onclick="deleteTransaction('${t.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-[11px] font-bold">Hapus</button>
             </div>
@@ -1303,7 +1381,7 @@
       if (hematPkgs.length) {
         optHtml += `<optgroup label="PAKET HEMAT">` + hematPkgs.map(p => `<option value="${p.name}" data-price="${p.price}" data-hours="${p.duration_hours}">${p.name.replace('Paket Hemat: ', '')} — ${formatRp(p.price)}</option>`).join('') + `</optgroup>`;
       }
-      optHtml += `<optgroup label="LAINNYA"><option value="Custom" data-price="0" data-hours="24">Custom (Atur Harga Manual)</option></optgroup>`;
+      optHtml += `<optgroup label="LAINNYA"><option value="Custom" data-price="0" data-hours="0">Custom (Atur Harga & Jam Manual)</option></optgroup>`;
       pkgSel.innerHTML = optHtml;
 
       if (id) {
@@ -1314,8 +1392,8 @@
         document.getElementById('tx-package').value = t.package_name || 'Custom';
         document.getElementById('tx-guest').value = t.guest_name;
         document.getElementById('tx-wa').value = t.guest_whatsapp || '';
-        document.getElementById('tx-checkin').value = t.check_in ? t.check_in.slice(0, 16) : '';
-        document.getElementById('tx-checkout').value = t.check_out ? t.check_out.slice(0, 16) : '';
+        document.getElementById('tx-checkin').value = toLocalDatetimeInput(t.check_in);
+        document.getElementById('tx-checkout').value = toLocalDatetimeInput(t.check_out);
         document.getElementById('tx-amount').value = t.amount;
         document.getElementById('tx-duration').value = t.duration_days;
         document.getElementById('tx-method').value = t.payment_method;
@@ -1326,35 +1404,66 @@
         document.getElementById('tx-modal-title').textContent = 'Tambah Transaksi Tamu';
         document.getElementById('tx-id').value = '';
         const now = new Date();
-        const localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
-        document.getElementById('tx-date').value = localIso.slice(0, 10);
+        const pad = (n) => String(n).padStart(2, '0');
+        document.getElementById('tx-date').value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
         document.getElementById('tx-guest').value = '';
         document.getElementById('tx-wa').value = '';
-        document.getElementById('tx-checkin').value = localIso.slice(0, 16);
+        document.getElementById('tx-checkin').value = toLocalDatetimeInput(now);
         document.getElementById('tx-status').value = 'Lunas';
         document.getElementById('tx-method').value = 'Transfer';
         document.getElementById('tx-notes').value = '';
         onPackageSelect();
       }
       document.getElementById('tx-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    // Deteksi durasi jam dari atribut paket atau teks nama paket (misal: "5 Jam", "Fullday", dll.)
+    function getSelectedPackageHours() {
+      const sel = document.getElementById('tx-package');
+      const opt = sel.options[sel.selectedIndex];
+      const attrHours = Number(opt?.dataset?.hours || 0);
+      if (attrHours > 0) return attrHours;
+
+      const label = (opt?.value || '').toLowerCase();
+      const matchJam = label.match(/(\d+)\s*jam/);
+      if (matchJam) return parseInt(matchJam[1], 10);
+      if (label.includes('fullday')) return 24;
+      if (label.includes('morning')) return 6;
+      if (label.includes('malam')) return 12;
+      if (label.includes('minggu') || label.includes('7x24')) return 168;
+      return 0;
+    }
+
+    // Hitung otomatis Check-Out berdasarkan Check-In + durasi jam paket
+    function autoCalculateCheckoutFromPackage() {
+      const hours = getSelectedPackageHours();
+      const ciVal = document.getElementById('tx-checkin').value;
+      if (!ciVal || hours <= 0) return false;
+
+      const ciDate = new Date(ciVal);
+      if (Number.isNaN(ciDate.getTime())) return false;
+
+      const coDate = new Date(ciDate.getTime() + hours * 60 * 60 * 1000);
+      document.getElementById('tx-checkout').value = toLocalDatetimeInput(coDate);
+      document.getElementById('tx-duration').value = Math.max(0.08, +(hours / 24).toFixed(2));
+      return true;
     }
 
     function onPackageSelect() {
       const sel = document.getElementById('tx-package');
       const opt = sel.options[sel.selectedIndex];
       const price = Number(opt?.dataset?.price || 0);
-      const hours = Number(opt?.dataset?.hours || 24);
       if (price > 0) document.getElementById('tx-amount').value = price;
-      document.getElementById('tx-duration').value = Math.max(0.08, +(hours / 24).toFixed(2));
 
-      const ci = document.getElementById('tx-checkin').value;
-      if (ci) {
-        const d = new Date(ci);
-        d.setHours(d.getHours() + hours);
-        const coIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        document.getElementById('tx-checkout').value = coIso;
-      }
+      autoCalculateCheckoutFromPackage();
       syncPaidAmount();
+    }
+
+    // Dipanggil setiap kali tanggal/jam Check-In diubah
+    function onCheckinChange() {
+      const updated = autoCalculateCheckoutFromPackage();
+      if (!updated) calcDurationFromDates();
     }
 
     function calcDurationFromDates() {
@@ -1375,10 +1484,8 @@
       else if (status === 'Belum bayar') document.getElementById('tx-paid').value = 0;
     }
 
-    async function saveTransaction(e) {
-      e.preventDefault();
-      const id = document.getElementById('tx-id').value;
-      const payload = {
+    function collectTxFormPayload() {
+      return {
         user_id: currentUser.id,
         apartment_id: apartment.id,
         type: 'income',
@@ -1395,6 +1502,18 @@
         paid_amount: Number(document.getElementById('tx-paid').value),
         notes: document.getElementById('tx-notes').value.trim()
       };
+    }
+
+    async function saveTransaction(e, shareAfterSave = false) {
+      if (e) e.preventDefault();
+      const form = document.getElementById('tx-form');
+      if (form && !form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const id = document.getElementById('tx-id').value;
+      const payload = collectTxFormPayload();
 
       const { error } = id
         ? await sb.from('transactions').update(payload).eq('id', id)
@@ -1403,7 +1522,14 @@
       if (error) return alert('Gagal menyimpan: ' + error.message);
       closeModal('tx-modal');
       showToast('Transaksi tamu tersimpan!');
+      if (shareAfterSave) {
+        openGuestWhatsAppShare(payload);
+      }
       await syncAllData(false);
+    }
+
+    function saveAndShareTx(e) {
+      saveTransaction(e, true);
     }
 
     async function deleteTransaction(id) {
